@@ -853,7 +853,12 @@ await t("LLM config: a local model only, Ollama by default, key optional, other 
   assert.deepEqual(resolveLlmConfig({ QUIREN_LLM_PROVIDER: "Local", QUIREN_LLM_MODEL: "gemma3", QUIREN_LLM_BASE_URL: "http://127.0.0.1:1234/v1" }), { llm: { provider: "openai", baseUrl: "http://127.0.0.1:1234/v1", local: true }, models: { analyzer: "gemma3", organizer: "gemma3" } });
   assert.equal(resolveLlmConfig({ QUIREN_LLM_API_KEY: "lm" }).llm.apiKey, "lm");
   assert.deepEqual(resolveLlmConfig({ QUIREN_LLM_MODEL: "m", QUIREN_ANALYZER_MODEL: "small" }).models, { analyzer: "small", organizer: "m" });
-  for (const p of ["anthropic", "openai", "gemini"]) assert.throws(() => resolveLlmConfig({ QUIREN_LLM_PROVIDER: p }), (e) => e instanceof UsageError && /local model only/.test(e.message));
+  for (const p of ["anthropic", "openai", "gemini"]) assert.throws(() => resolveLlmConfig({ QUIREN_LLM_PROVIDER: p }), (e) => e instanceof UsageError && /must be "local" \(default\) or "nvidia"/.test(e.message));
+  // NVIDIA: opt-in only, with its own key; the default model and endpoint, both overridable
+  assert.throws(() => resolveLlmConfig({ QUIREN_LLM_PROVIDER: "nvidia" }), /No key for NVIDIA/);
+  assert.deepEqual(resolveLlmConfig({ QUIREN_LLM_PROVIDER: "NVIDIA", NVIDIA_API_KEY: "nv" }), { llm: { provider: "openai", baseUrl: "https://integrate.api.nvidia.com/v1", apiKey: "nv", hosted: "NVIDIA" }, models: { analyzer: "nvidia/nemotron-3.5-lightning-30b-a3b", organizer: "nvidia/nemotron-3.5-lightning-30b-a3b" } });
+  assert.equal(resolveLlmConfig({ QUIREN_LLM_PROVIDER: "nvidia", NVIDIA_API_KEY: "nv", QUIREN_LLM_MODEL: "z-ai/glm" }).models.organizer, "z-ai/glm");
+  assert.equal(resolveLlmConfig({ NVIDIA_API_KEY: "nv" }).llm.local, true, "a key alone never switches off the local default");
 });
 
 await t("local model: picks the first installed model, keeps a named one, explains a missing server or empty list", async () => {

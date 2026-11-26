@@ -237,7 +237,7 @@ await t("dream: refusals and checks before anything is sent (exit codes 0/2)", (
   assert.match(noserver.err, /No local model server at http:\/\/127\.0\.0\.1:9\/v1\. Start Ollama/);
   assert.match(cli(["dream", "--space", "dreamy"], { env: KEY_ENV }).err, /Not a terminal: pass --yes/);
   assert.equal(cli(["dream", "--space", "dreamy", "--yes"], { env: { ...KEY_ENV, QUIREN_LLM_PROVIDER: "gemini" } }).code, 2);
-  assert.match(cli(["dream", "--space", "dreamy", "--yes"], { env: { ...KEY_ENV, QUIREN_LLM_PROVIDER: "anthropic" } }).err, /Quiren dreams on a local model only/);
+  assert.match(cli(["dream", "--space", "dreamy", "--yes"], { env: { ...KEY_ENV, QUIREN_LLM_PROVIDER: "anthropic" } }).err, /must be "local" \(default\) or "nvidia"/);
   assert.equal(cli(["dream", "--space", "dreamy", "--since", "2026-02-30"]).code, 2);
   assert.equal(cli(["dream", "--space", "dreamy", "--max-inputs", "201"]).code, 2);
   assert.match(cli(["dream", "--space", "dreamy", "--min-pending", "1"]).err, /--min-pending only applies together with --if-due/);

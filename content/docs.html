@@ -95,7 +95,8 @@ quiren retention --days 90</code></pre>
           <tr><th>Variable</th><th>Meaning</th></tr>
           <tr><td><code>QUIREN_HOME</code></td><td>Storage root. Default <code>~/.quiren</code>.</td></tr>
           <tr><td><code>QUIREN_SPACE</code></td><td>Space when <code>--space</code> is not given. Default: the current folder's name.</td></tr>
-          <tr><td><code>QUIREN_LLM_API_KEY</code></td><td>Only if your local server asks for a key. Never needed for Ollama.</td></tr>
+          <tr><td><code>QUIREN_LLM_PROVIDER</code></td><td><code>local</code> (default) or <code>nvidia</code> (NVIDIA's hosted models, needs <code>NVIDIA_API_KEY</code>).</td></tr>
+          <tr><td><code>QUIREN_LLM_API_KEY</code></td><td>Key for the provider; falls back to <code>NVIDIA_API_KEY</code>. Never needed for Ollama.</td></tr>
           <tr><td><code>QUIREN_LLM_BASE_URL</code></td><td>Your local model server. Default <code>http://localhost:11434/v1</code> (Ollama); LM Studio is <code>http://localhost:1234/v1</code>.</td></tr>
           <tr><td><code>QUIREN_LLM_MODEL</code></td><td>Model for both roles. Optional: the first installed model is used.</td></tr>
           <tr><td><code>QUIREN_ANALYZER_MODEL</code></td><td>Model for the analyzers, if different from <code>QUIREN_LLM_MODEL</code>.</td></tr>
@@ -146,12 +147,13 @@ codex mcp add quiren -- npx -y quiren mcp
           <li>The staged changes become a proposal for you to review.</li>
         </ol>
         <p>The agents only have document tools (<code>list_docs</code>, <code>read_doc</code>, <code>grep_docs</code>, <code>write_doc</code>, <code>edit_doc</code>, <code>delete_doc</code>, <code>rename_doc</code>, <code>submit</code>). There is no shell, network or file access.</p>
-        <h3>Models: on your machine</h3>
+        <h3>Models: your machine first</h3>
         <ul>
           <li><strong>Ollama (default).</strong> <code>quiren dream</code> uses the first installed model, or the one in <code>QUIREN_LLM_MODEL</code>. Larger models (8B and up) write better pages.</li>
           <li><strong>LM Studio or llama.cpp.</strong> Start its server and set <code>QUIREN_LLM_BASE_URL</code>, for example <code>http://localhost:1234/v1</code>. Any local server with the OpenAI-compatible chat API and tool calling works.</li>
         </ul>
-        <p>No key, nothing leaves your machine and nothing is billed. Quiren never calls a hosted model API.</p>
+        <p>No key, nothing leaves your machine and nothing is billed.</p>
+        <p><strong>No GPU for a large model?</strong> Use NVIDIA's hosted models with a free key from build.nvidia.com: <code>QUIREN_LLM_PROVIDER=nvidia</code> and <code>NVIDIA_API_KEY</code>. The default model is <code>nvidia/nemotron-3.5-lightning-30b-a3b</code>; pick another with <code>QUIREN_LLM_MODEL</code>. The dream input is then sent to NVIDIA. Nothing calls a hosted API unless you set this.</p>
         <p>Transient errors (429, 5xx) are retried with backoff.</p>
         <h3>Token budgets</h3>
         <p><code>--budget TOKENS</code> caps a run (default 3,000,000; a dream whose estimate is above it is refused). The cap is checked before each model call, so a run can overshoot only by the calls already in flight. You see progress at 50, 80 and 100 percent.</p>
@@ -167,7 +169,7 @@ codex mcp add quiren -- npx -y quiren mcp
           <li>Secret patterns (API keys, tokens, private keys, JWTs, credentials in URLs and assignments) are replaced with <code>[REDACTED:kind]</code> before anything is written, including what a dream writes. This catches known patterns, not everything.</li>
           <li>A dream only writes a proposal. Applying is always a command you run; a page changed since the dream started is skipped.</li>
           <li>Every config file init edits is backed up first. Page paths are validated, so nothing is written outside the memory folder.</li>
-          <li>No telemetry and no hosted model: a dream runs on the local model server you point it at, and nothing leaves your machine.</li>
+          <li>No telemetry. A dream runs on the local model server you point it at and nothing leaves your machine, unless you choose <code>QUIREN_LLM_PROVIDER=nvidia</code>.</li>
         </ul>
 
         <h2 id="examples">Examples</h2>

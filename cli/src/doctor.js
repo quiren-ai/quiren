@@ -5,7 +5,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { quirenRoot, userHome, isSafeId } from "./store.js";
 import { findBinary, hasHook } from "./init.js";
-import { DEFAULT_LOCAL_BASE_URL } from "./dream.js";
+import { DEFAULT_LOCAL_BASE_URL, DEFAULT_NVIDIA_BASE_URL, DEFAULT_NVIDIA_MODEL } from "./dream.js";
 
 const out = (s = "") => process.stdout.write(`${s}\n`);
 const check = (name, status, detail, hint = "") => ({ name, status, detail, hint });
@@ -127,7 +127,12 @@ function checkMcp(bin, env) {
 
 function checkLlm(env) {
   const provider = (env.QUIREN_LLM_PROVIDER || "local").toLowerCase();
-  if (provider !== "local") return check("llm config", "FAIL", `QUIREN_LLM_PROVIDER "${provider}" is not supported`, "Quiren dreams on a local model only: unset QUIREN_LLM_PROVIDER.");
+  if (provider === "nvidia") {
+    const key = env.QUIREN_LLM_API_KEY || env.NVIDIA_API_KEY;
+    const detail = `NVIDIA hosted; base URL ${env.QUIREN_LLM_BASE_URL || DEFAULT_NVIDIA_BASE_URL}; model ${env.QUIREN_LLM_MODEL || DEFAULT_NVIDIA_MODEL}; api key ${key ? "set" : "missing"}`;
+    return key ? check("llm config", "PASS", detail, "Not tested against the network.") : check("llm config", "WARN", detail, "Set NVIDIA_API_KEY (free at build.nvidia.com), or unset QUIREN_LLM_PROVIDER to use a local model.");
+  }
+  if (provider !== "local") return check("llm config", "FAIL", `QUIREN_LLM_PROVIDER "${provider}" is not supported`, 'Use "local" (default) or "nvidia".');
   const model = env.QUIREN_LLM_MODEL || env.QUIREN_ANALYZER_MODEL;
   return check("llm config", "PASS", `local model; base URL ${env.QUIREN_LLM_BASE_URL || DEFAULT_LOCAL_BASE_URL}; model ${model || "first installed (auto)"}; no key needed`, "Not tested against the local server. Needed only for `quiren dream`.");
 }

@@ -15,6 +15,8 @@ const out = (s = "") => process.stdout.write(`${s}\n`);
 const fmt = (n) => Number(n).toLocaleString("en-US");
 
 export const DEFAULT_LOCAL_BASE_URL = "http://localhost:11434/v1";
+export const DEFAULT_NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1";
+export const DEFAULT_NVIDIA_MODEL = "nvidia/nemotron-3.5-lightning-30b-a3b";
 
 /**
  * Dream settings from the environment. Quiren dreams on a model on this machine only: Ollama by default, or LM Studio /
@@ -23,8 +25,14 @@ export const DEFAULT_LOCAL_BASE_URL = "http://localhost:11434/v1";
  */
 export function resolveLlmConfig(env) {
   const provider = (env.QUIREN_LLM_PROVIDER || "local").toLowerCase();
+  if (provider === "nvidia") {
+    const apiKey = env.QUIREN_LLM_API_KEY || env.NVIDIA_API_KEY;
+    if (!apiKey) throw new UsageError("No key for NVIDIA. Set NVIDIA_API_KEY (a free key from build.nvidia.com), or unset QUIREN_LLM_PROVIDER to dream on a local model.");
+    const model = env.QUIREN_LLM_MODEL || DEFAULT_NVIDIA_MODEL;
+    return { llm: { provider: "openai", baseUrl: env.QUIREN_LLM_BASE_URL || DEFAULT_NVIDIA_BASE_URL, apiKey, hosted: "NVIDIA" }, models: { analyzer: env.QUIREN_ANALYZER_MODEL || model, organizer: env.QUIREN_ORGANIZER_MODEL || model } };
+  }
   if (provider !== "local") {
-    throw new UsageError(`Quiren dreams on a local model only (QUIREN_LLM_PROVIDER is "${provider}"). Unset it, start Ollama or LM Studio, and run quiren dream. Or ask your agent to "run a Quiren dream" (dream_prepare / dream_submit).`);
+    throw new UsageError(`QUIREN_LLM_PROVIDER must be "local" (default) or "nvidia" (got "${provider}"). Or ask your agent to "run a Quiren dream" (dream_prepare / dream_submit).`);
   }
   const llm = { provider: "openai", baseUrl: env.QUIREN_LLM_BASE_URL || DEFAULT_LOCAL_BASE_URL, local: true };
   if (env.QUIREN_LLM_API_KEY) llm.apiKey = env.QUIREN_LLM_API_KEY;
@@ -209,7 +217,7 @@ export async function dreamCommand(store, flags, env) {
   const docsBytes = Object.values(live).reduce((n, c) => n + Buffer.byteLength(c), 0);
   const est = estimateDream({ transcripts: inputs.map((i) => ({ chars: i.text.length })), existingDocsBytes: docsBytes });
   out(`Input size: ${fmt(est.chars)} characters`);
-  out(`Rough estimate: ~${fmt(est.est_total_tokens)} tokens (budget ${fmt(budget)}). It runs on your local model: nothing is billed.`);
+  out(`Rough estimate: ~${fmt(est.est_total_tokens)} tokens (budget ${fmt(budget)}). ${(env.QUIREN_LLM_PROVIDER || "local").toLowerCase() === "nvidia" ? "It runs on NVIDIA's hosted API with your key (free tier limits apply)." : "It runs on your local model: nothing is billed."}`);
   for (const n of est.notes) out(`  ${n}`);
   if (flags["dry-run"]) {
     out("Dry run: nothing was sent.");
@@ -222,7 +230,7 @@ export async function dreamCommand(store, flags, env) {
     );
   }
   const config = await pickLocalModel(resolveLlmConfig(env));
-  out(`Model: ${config.models.analyzer} (local, ${config.llm.baseUrl})`);
+  out(`Model: ${config.models.analyzer} (${config.llm.hosted ? `${config.llm.hosted}, ${config.llm.baseUrl}` : `local, ${config.llm.baseUrl}`})`);
   if (!flags.yes) {
     if (!process.stdin.isTTY) throw new UsageError("Not a terminal: pass --yes to confirm that this dream may call your LLM provider.");
     if (!(await confirm("Proceed? [y/N] "))) {

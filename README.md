@@ -20,7 +20,7 @@ quiren dream           # on a local model (Ollama), no key needed
 - **Through your agent:** ask it to "run a Quiren dream"; it uses the `dream_prepare` and `dream_submit` MCP tools.
 - **Another local server:** LM Studio or llama.cpp work too, set `QUIREN_LLM_BASE_URL` (for example `http://localhost:1234/v1`). Pick a model with `QUIREN_LLM_MODEL`.
 
-Quiren never calls a hosted model API: every dream runs on your machine.
+No GPU for an 8B model? `QUIREN_LLM_PROVIDER=nvidia` with a free `NVIDIA_API_KEY` from build.nvidia.com runs the dream on NVIDIA's hosted models instead. Nothing calls a hosted API unless you set it.
 
 Every dream writes a proposal. Review with `quiren diff`, then `quiren apply` or `quiren reject`.
 

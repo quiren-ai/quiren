@@ -39,8 +39,8 @@ Dreaming
   retention [--days N]
 
 Global: --space NAME (default: $QUIREN_SPACE or the current folder name), --help, --version
-Environment: QUIREN_HOME (default ~/.quiren), QUIREN_LLM_BASE_URL (local model server, default Ollama),
-  QUIREN_LLM_MODEL, QUIREN_ANALYZER_MODEL, QUIREN_ORGANIZER_MODEL, QUIREN_LLM_API_KEY (only if your local server needs one)
+Environment: QUIREN_HOME (default ~/.quiren), QUIREN_LLM_PROVIDER (local, default; or nvidia with NVIDIA_API_KEY),
+  QUIREN_LLM_BASE_URL, QUIREN_LLM_MODEL, QUIREN_ANALYZER_MODEL, QUIREN_ORGANIZER_MODEL, QUIREN_LLM_API_KEY
 Exit codes: 0 ok, 1 runtime error, 2 usage or configuration error`;
 
 const out = (s = "") => process.stdout.write(`${s}\n`);

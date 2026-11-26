@@ -56,7 +56,7 @@ A dream writes a **proposal**, never the live wiki. Review it with `quiren diff`
 
 **Local first: no API key needed.**
 - `quiren dream` runs on a model on your machine by default: start Ollama (or LM Studio), `ollama pull qwen3:8b`, then `quiren dream`. No key, nothing billed, nothing leaves your machine.
-- Or choose a hosted API: `QUIREN_LLM_PROVIDER=anthropic` with `ANTHROPIC_API_KEY`.
+- No GPU for a large model? Use NVIDIA's hosted models with a free key from build.nvidia.com: `QUIREN_LLM_PROVIDER=nvidia NVIDIA_API_KEY=... quiren dream`.
 - Through the agent you already use: ask it to run a dream and it calls the `dream_prepare` and `dream_submit` tools, using its own model and your existing plan.
 
 How `quiren dream` runs:
@@ -75,11 +75,11 @@ Only for `quiren dream`. Through your agent none of this is needed.
 
 | Variable | Meaning |
 | --- | --- |
-| `QUIREN_LLM_PROVIDER` | `local` (default: Ollama / LM Studio on your machine, no key), `anthropic` (needs a key) or `openai` (any OpenAI-compatible `/chat/completions` endpoint with tool calling) |
-| `QUIREN_LLM_API_KEY` | falls back to `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` |
-| `QUIREN_LLM_BASE_URL` | local default `http://localhost:11434/v1` (Ollama; LM Studio is `http://localhost:1234/v1`), openai default `http://localhost:20128/v1` |
-| `QUIREN_LLM_MODEL` | one model for both roles; on local it defaults to the first installed model |
-| `QUIREN_ANALYZER_MODEL`, `QUIREN_ORGANIZER_MODEL` | default `claude-haiku-5-5` for anthropic; required for openai |
+| `QUIREN_LLM_PROVIDER` | `local` (default: Ollama / LM Studio on your machine, no key) or `nvidia` (NVIDIA's hosted models, needs `NVIDIA_API_KEY`) |
+| `QUIREN_LLM_API_KEY` | key for the provider; falls back to `NVIDIA_API_KEY`. A local server rarely needs one |
+| `QUIREN_LLM_BASE_URL` | local default `http://localhost:11434/v1` (Ollama; LM Studio is `http://localhost:1234/v1`), nvidia default `https://integrate.api.nvidia.com/v1` |
+| `QUIREN_LLM_MODEL` | one model for both roles; local: the first installed model, nvidia: `nvidia/nemotron-3.5-lightning-30b-a3b` |
+| `QUIREN_ANALYZER_MODEL`, `QUIREN_ORGANIZER_MODEL` | a different model per role, if you want one |
 
 It prints a token estimate and asks before spending; the default budget is 3,000,000 tokens and a dream that would exceed it is refused. Dream agents get document tools only (`list_docs`, `read_doc`, `grep_docs`, `write_doc`, `edit_doc`, and for the organizer `delete_doc`, `rename_doc`, then `submit`; no shell, no network) and treat transcripts as untrusted data. Quality depends on the model you use.
 
