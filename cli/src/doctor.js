@@ -5,7 +5,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { quirenRoot, userHome, isSafeId } from "./store.js";
 import { findBinary, hasHook } from "./init.js";
-import { DEFAULT_ANTHROPIC_MODEL, DEFAULT_LOCAL_BASE_URL, DEFAULT_OPENAI_BASE_URL } from "./dream.js";
+import { DEFAULT_LOCAL_BASE_URL } from "./dream.js";
 
 const out = (s = "") => process.stdout.write(`${s}\n`);
 const check = (name, status, detail, hint = "") => ({ name, status, detail, hint });
@@ -127,26 +127,9 @@ function checkMcp(bin, env) {
 
 function checkLlm(env) {
   const provider = (env.QUIREN_LLM_PROVIDER || "local").toLowerCase();
-  if (!["anthropic", "openai", "local"].includes(provider)) return check("llm config", "FAIL", `QUIREN_LLM_PROVIDER "${provider}" is not valid`, 'Use "local", "anthropic" or "openai".');
-  if (provider === "local") {
-    const model = env.QUIREN_LLM_MODEL || env.QUIREN_ANALYZER_MODEL;
-    return check("llm config", "PASS", `provider local; base URL ${env.QUIREN_LLM_BASE_URL || DEFAULT_LOCAL_BASE_URL}; model ${model || "first installed (auto)"}; no key needed`, "Not tested against the local server.");
-  }
-  const fallbackKey = provider === "anthropic" ? "ANTHROPIC_API_KEY" : "OPENAI_API_KEY";
-  const key = env.QUIREN_LLM_API_KEY || env[fallbackKey];
-  const parts = [`provider ${provider}`, `api key ${key ? "set" : "missing"}`];
-  const problems = key ? [] : [`Set QUIREN_LLM_API_KEY (or ${fallbackKey}), or use a model on this machine with QUIREN_LLM_PROVIDER=local, or dream through your agent (no key).`];
-  if (env.QUIREN_LLM_BASE_URL) parts.push("base URL set");
-  else parts.push(provider === "openai" ? `base URL default ${DEFAULT_OPENAI_BASE_URL}` : "base URL default (Anthropic API)");
-  const fallback = provider === "anthropic" ? DEFAULT_ANTHROPIC_MODEL : env.QUIREN_LLM_MODEL;
-  for (const [role, varName] of [["analyzer", "QUIREN_ANALYZER_MODEL"], ["organizer", "QUIREN_ORGANIZER_MODEL"]]) {
-    const model = env[varName] || fallback;
-    parts.push(`${role} model ${model ?? "missing"}${!env[varName] && fallback ? " (default)" : ""}`);
-    if (!model) problems.push(`Set ${varName}.`);
-  }
-  return problems.length
-    ? check("llm config", "WARN", parts.join("; "), `${problems.join(" ")} Needed only for \`quiren dream\`.`)
-    : check("llm config", "PASS", parts.join("; "), "Not tested against the network.");
+  if (provider !== "local") return check("llm config", "FAIL", `QUIREN_LLM_PROVIDER "${provider}" is not supported`, "Quiren dreams on a local model only: unset QUIREN_LLM_PROVIDER.");
+  const model = env.QUIREN_LLM_MODEL || env.QUIREN_ANALYZER_MODEL;
+  return check("llm config", "PASS", `local model; base URL ${env.QUIREN_LLM_BASE_URL || DEFAULT_LOCAL_BASE_URL}; model ${model || "first installed (auto)"}; no key needed`, "Not tested against the local server. Needed only for `quiren dream`.");
 }
 
 function checkPending(store) {

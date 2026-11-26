@@ -18,7 +18,7 @@ const SPACE = "acme-app";
 const store = new Store(ENV.QUIREN_HOME, SPACE);
 const cli = (args, opts = {}) => runCli(ENV, args, { cwd: PROJECT, ...opts });
 const { t, done } = suite("e2e");
-const KEY = { QUIREN_LLM_PROVIDER: "anthropic", QUIREN_LLM_API_KEY: "mock-key-not-real", MOCK_LLM: "1" };
+const KEY = { QUIREN_LLM_MODEL: "mock-model", MOCK_LLM: "1" };
 
 /** Claude Code session JSONL as Claude Code writes it (summary, meta, sidechain, tool use, tool result). */
 function claudeSession(sessionId, turns) {
@@ -224,31 +224,31 @@ await t("Claude Code session 2: the digest is the index; the prompt hook recalls
   assert.equal(hook("user-prompt", p).out, "");
 });
 
-// ------------------------------------------------------------------------------------------------ 6. dreams with a key (mocked)
-await t("quiren dream --yes with Anthropic (mocked): proposal from new sessions, then applied", () => {
+// ------------------------------------------------------------------------------------------------ 6. dreams on a local model (mocked)
+await t("quiren dream --yes on a local model (mocked): proposal from new sessions, then applied", () => {
   const sid = "8f1c2d3e-0000-4000-8000-000000000003";
   const jl = path.join(HOME, "s3.jsonl");
   fs.writeFileSync(jl, claudeSession(sid, [["Rollbacks use make rollback", "Got it.", "make rollback", "rolled back"]]));
   hook("stop", { session_id: sid, transcript_path: jl, cwd: PROJECT, hook_event_name: "Stop" });
-  const log = path.join(tmp, "anthropic.jsonl");
+  const log = path.join(tmp, "local-default.jsonl");
   const r = cli(["dream", "--yes"], { mock: true, extraEnv: { ...KEY, MOCK_LLM_LOG: log } });
   assert.equal(r.code, 0, r.out + r.err);
   assert.match(r.out, /^Space: acme-app\nPending transcripts: 1\nUnconsolidated notes: 0\n/);
   const id = /Proposal (dream-\S+) \(review\): 1 added, 0 modified, 0 removed/.exec(r.out)?.[1];
   assert.ok(id, r.out);
   const calls = fs.readFileSync(log, "utf8").trim().split("\n").map((l) => JSON.parse(l));
-  assert.ok(calls.every((c) => c.provider === "anthropic" && c.url === "https://api.anthropic.com/v1/messages"));
+  assert.ok(calls.every((c) => c.url === "http://localhost:11434/v1/chat/completions" && c.model === "mock-model" && !c.headers.authorization));
   assert.equal(store.readDoc(`/${sid}.md`), null, "nothing live before apply");
   assert.equal(cli(["apply", id]).code, 0);
   assert.match(store.readDoc(`/${sid}.md`), /Rollbacks use make rollback/);
   assert.equal(store.getTranscript(sid).status, "dreamed");
 });
 
-await t("quiren dream --yes with an OpenAI-compatible endpoint (mocked) and --apply", () => {
+await t("quiren dream --yes on a local server with its own URL, models and key (mocked) and --apply", () => {
   cli(["log", "--id", "agent-9", "--source", "hermes", "-"], { input: JSON.stringify({ events: [{ role: "user", content: "feature flags live in flags.yaml" }] }) });
   cli(["remember", "the on-call rotation changes every monday"]);
   const log = path.join(tmp, "openai.jsonl");
-  const env = { ...KEY, MOCK_LLM_LOG: log, QUIREN_LLM_PROVIDER: "openai", QUIREN_LLM_BASE_URL: "http://router.local/v1", QUIREN_ANALYZER_MODEL: "small", QUIREN_ORGANIZER_MODEL: "large" };
+  const env = { MOCK_LLM: "1", QUIREN_LLM_API_KEY: "mock-key-not-real", MOCK_LLM_LOG: log, QUIREN_LLM_BASE_URL: "http://router.local/v1", QUIREN_ANALYZER_MODEL: "small", QUIREN_ORGANIZER_MODEL: "large" };
   const r = cli(["dream", "--yes", "--apply"], { mock: true, extraEnv: env });
   assert.equal(r.code, 0, r.out + r.err);
   assert.match(r.out, /Pending transcripts: 1\nUnconsolidated notes: 1\n/);

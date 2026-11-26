@@ -10,8 +10,6 @@ export const MAX_TRANSCRIPTS = 50;
 export const MAX_TRANSCRIPT_CHARS = 6_000_000;
 export const MAX_NOTES = 300;
 export const DEFAULT_BUDGET = 3_000_000;
-export const DEFAULT_ANTHROPIC_MODEL = "claude-haiku-5-5";
-export const DEFAULT_OPENAI_BASE_URL = "http://localhost:20128/v1";
 
 const out = (s = "") => process.stdout.write(`${s}\n`);
 const fmt = (n) => Number(n).toLocaleString("en-US");
@@ -19,33 +17,19 @@ const fmt = (n) => Number(n).toLocaleString("en-US");
 export const DEFAULT_LOCAL_BASE_URL = "http://localhost:11434/v1";
 
 /**
- * LLM settings from the environment. A missing key or model is a UsageError (exit 2).
- * "local" is a model on this machine (Ollama by default, or LM Studio / llama.cpp via QUIREN_LLM_BASE_URL): it speaks
- * the OpenAI-compatible API, needs no key, and its model comes from QUIREN_LLM_MODEL or is picked from what is installed.
+ * Dream settings from the environment. Quiren dreams on a model on this machine only: Ollama by default, or LM Studio /
+ * llama.cpp via QUIREN_LLM_BASE_URL. They speak the OpenAI-compatible API and need no key (QUIREN_LLM_API_KEY is sent
+ * only if your local server asks for one). The model comes from QUIREN_LLM_MODEL or is picked from what is installed.
  */
 export function resolveLlmConfig(env) {
   const provider = (env.QUIREN_LLM_PROVIDER || "local").toLowerCase();
-  if (!["anthropic", "openai", "local"].includes(provider)) throw new UsageError(`QUIREN_LLM_PROVIDER must be "local", "anthropic" or "openai" (got "${provider}").`);
-  if (provider === "local") {
-    const llm = { provider: "openai", baseUrl: env.QUIREN_LLM_BASE_URL || DEFAULT_LOCAL_BASE_URL, local: true };
-    const key = env.QUIREN_LLM_API_KEY;
-    if (key) llm.apiKey = key;
-    const model = env.QUIREN_LLM_MODEL;
-    return { llm, models: { analyzer: env.QUIREN_ANALYZER_MODEL || model, organizer: env.QUIREN_ORGANIZER_MODEL || model } };
+  if (provider !== "local") {
+    throw new UsageError(`Quiren dreams on a local model only (QUIREN_LLM_PROVIDER is "${provider}"). Unset it, start Ollama or LM Studio, and run quiren dream. Or ask your agent to "run a Quiren dream" (dream_prepare / dream_submit).`);
   }
-  const fallbackKey = provider === "anthropic" ? "ANTHROPIC_API_KEY" : "OPENAI_API_KEY";
-  const apiKey = env.QUIREN_LLM_API_KEY || env[fallbackKey];
-  if (!apiKey) throw new UsageError(`No API key for provider "${provider}". Set QUIREN_LLM_API_KEY (or ${fallbackKey}). No key? Run a model on this machine: QUIREN_LLM_PROVIDER=local (Ollama), or ask your agent (Claude Code, Codex, Cursor...) to "run a Quiren dream": it uses its own model through the dream_prepare and dream_submit tools.`);
-  const llm = { provider, apiKey };
-  if (env.QUIREN_LLM_BASE_URL) llm.baseUrl = env.QUIREN_LLM_BASE_URL;
-  else if (provider === "openai") llm.baseUrl = DEFAULT_OPENAI_BASE_URL;
-  const fallbackModel = provider === "anthropic" ? DEFAULT_ANTHROPIC_MODEL : env.QUIREN_LLM_MODEL;
-  const analyzer = env.QUIREN_ANALYZER_MODEL || fallbackModel;
-  const organizer = env.QUIREN_ORGANIZER_MODEL || fallbackModel;
-  if (!analyzer || !organizer) {
-    throw new UsageError('Provider "openai" needs models: set QUIREN_LLM_MODEL (or QUIREN_ANALYZER_MODEL and QUIREN_ORGANIZER_MODEL) to model names your endpoint serves.');
-  }
-  return { llm, models: { analyzer, organizer } };
+  const llm = { provider: "openai", baseUrl: env.QUIREN_LLM_BASE_URL || DEFAULT_LOCAL_BASE_URL, local: true };
+  if (env.QUIREN_LLM_API_KEY) llm.apiKey = env.QUIREN_LLM_API_KEY;
+  const model = env.QUIREN_LLM_MODEL;
+  return { llm, models: { analyzer: env.QUIREN_ANALYZER_MODEL || model, organizer: env.QUIREN_ORGANIZER_MODEL || model } };
 }
 
 /** For a local model with no name given: ask the local server what is installed and take the first model. */
@@ -225,8 +209,7 @@ export async function dreamCommand(store, flags, env) {
   const docsBytes = Object.values(live).reduce((n, c) => n + Buffer.byteLength(c), 0);
   const est = estimateDream({ transcripts: inputs.map((i) => ({ chars: i.text.length })), existingDocsBytes: docsBytes });
   out(`Input size: ${fmt(est.chars)} characters`);
-  const local = (env.QUIREN_LLM_PROVIDER || "local").toLowerCase() === "local";
-  out(`Rough estimate: ~${fmt(est.est_total_tokens)} tokens (budget ${fmt(budget)}). ${local ? "It runs on your local model: nothing is billed." : "This is billed by your LLM provider."}`);
+  out(`Rough estimate: ~${fmt(est.est_total_tokens)} tokens (budget ${fmt(budget)}). It runs on your local model: nothing is billed.`);
   for (const n of est.notes) out(`  ${n}`);
   if (flags["dry-run"]) {
     out("Dry run: nothing was sent.");
@@ -239,7 +222,7 @@ export async function dreamCommand(store, flags, env) {
     );
   }
   const config = await pickLocalModel(resolveLlmConfig(env));
-  out(`Model: ${config.models.analyzer}${config.llm.local ? ` (local, ${config.llm.baseUrl})` : ` (${config.llm.provider})`}`);
+  out(`Model: ${config.models.analyzer} (local, ${config.llm.baseUrl})`);
   if (!flags.yes) {
     if (!process.stdin.isTTY) throw new UsageError("Not a terminal: pass --yes to confirm that this dream may call your LLM provider.");
     if (!(await confirm("Proceed? [y/N] "))) {

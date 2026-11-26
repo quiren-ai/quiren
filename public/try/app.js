@@ -531,10 +531,7 @@ export function mount() {
   docOn("keydown", (e) => { if (e.key === "Escape" && what.classList.contains("open")) { what.classList.remove("open"); $("bWhat").focus(); } });
   winOn("resize", () => { for (const [id, a] of actors) moveTo(id, a.dataset.at || null); });
 
-  fetch(API + "/status", { headers: { accept: "application/json" } }).then((r) => (r.ok ? r.json() : null)).then((j) => {
-  if (j && j.enabled && j.model) { LIVE.available = true; LIVE.model = j.model; LIVE.sessionBudget = Math.min(LIVE.sessionBudget, j.limits?.tokens_left_today ?? LIVE.sessionBudget); $("mLive").disabled = false; $("mLive").title = "Run the same flow with a real model"; $("main").dataset.liveok = "1"; render(); }
-  else $("mLive").title = j ? "The live simulation is not available on this site right now." : "The live simulation cannot be reached.";
-  }).catch(() => { $("mLive").title = "The live simulation cannot be reached."; });
+  // the site runs no hosted model: the recorded example is the whole simulation
 
   reset();
 

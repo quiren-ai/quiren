@@ -18,7 +18,9 @@ quiren dream           # on a local model (Ollama), no key needed
 
 - **Local model (default):** run Ollama or LM Studio (`ollama pull qwen3:8b`), then `quiren dream`. No key, nothing billed, nothing leaves your machine.
 - **Through your agent:** ask it to "run a Quiren dream"; it uses the `dream_prepare` and `dream_submit` MCP tools.
-- **A hosted API, only if you choose it:** `QUIREN_LLM_PROVIDER=anthropic` with `ANTHROPIC_API_KEY`, or any OpenAI-compatible endpoint.
+- **Another local server:** LM Studio or llama.cpp work too, set `QUIREN_LLM_BASE_URL` (for example `http://localhost:1234/v1`). Pick a model with `QUIREN_LLM_MODEL`.
+
+Quiren never calls a hosted model API: every dream runs on your machine.
 
 Every dream writes a proposal. Review with `quiren diff`, then `quiren apply` or `quiren reject`.
 
@@ -27,7 +29,7 @@ Every dream writes a proposal. Review with `quiren diff`, then `quiren apply` or
 | Folder | What it is |
 |---|---|
 | `cli/` | The `quiren` npm package: CLI, MCP server (17 tools), Claude Code hooks, dream engine. Zero dependencies. |
-| `app/`, `components/` | The website (Next.js): landing, `/try`, `/docs`, `/privacy`, `/terms`, and the capped proxy for Live mode at `/api/sim`. |
+| `app/`, `components/` | The website (Next.js): landing, `/try`, `/docs`, `/privacy`, `/terms`. |
 | `public/try/` | `/try` runs the same engine in the browser (`engine/` is built from `cli/src/core`). |
 | `content/` | Docs, privacy and terms as HTML. |
 | `tools/` | Engine copier, `/try` browser test and the mock model it uses. |
@@ -41,18 +43,14 @@ node tools/build-engine.cjs            # copy cli/src/core to public/try/engine 
 npm install && npm run dev             # the site on http://localhost:3000
 ```
 
-Browser test of `/try`, recorded and Live, against a mock model (needs Playwright):
+Browser test of `/try` (needs Playwright):
 
 ```bash
-node tools/mock-upstream.mjs &
-npm run build && ANTHROPIC_API_KEY=test ANTHROPIC_BASE_URL=http://127.0.0.1:5299 npx next start -p 3610 &
+npm run build && npx next start -p 3610 &
 node tools/try-e2e.cjs http://127.0.0.1:3610
-QUIREN_SIM_RPM=1000 node tools/server-test.mjs on
 ```
 
-Live mode on `/try` is off until `ANTHROPIC_API_KEY` is set on the server (see `.env.example`). The daily token cap,
-per-visitor budget, rate limit, model and allowed tools are enforced server-side, and Live hides itself when the
-account cannot answer.
+`/try` plays a recorded example in the browser: no model runs and nothing is sent anywhere.
 
 ## Credits and license
 

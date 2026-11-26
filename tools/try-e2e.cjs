@@ -1,10 +1,9 @@
-// Browser test of /try: the recorded story end to end on BASE, and Live mode on LIVE_BASE (a server started with
-// ANTHROPIC_BASE_URL pointing at server/mock-upstream.mjs). Screenshots go to tmp/try-*.png.
-//   node tools/try-e2e.cjs [BASE] [LIVE_BASE]
+// Browser test of /try: the recorded story end to end on BASE, then the page at phone width.
+// Screenshots go to tmp/try-*.png.
+//   node tools/try-e2e.cjs [BASE]
 const path = require("path");
 const { chromium } = require(process.env.PLAYWRIGHT_PATH || "playwright"); // set PLAYWRIGHT_PATH if playwright is installed elsewhere
 const BASE = process.argv[2] || "http://127.0.0.1:3610";
-const LIVE = process.argv[3] || BASE;
 const SHOTS = process.env.SHOTS || path.join(__dirname, "..", "tmp");
 let fails = 0;
 const ok = (c, m) => { console.log((c ? "ok   " : "FAIL ") + m); if (!c) fails++; };
@@ -53,31 +52,6 @@ const ok = (c, m) => { console.log((c ? "ok   " : "FAIL ") + m); if (!c) fails++
   else ok(false, "viewer has wikilinks");
   await page.screenshot({ path: SHOTS + "/try-session4.png" });
   ok(errors.length === 0, "no console errors (recorded): " + errors.join(" | "));
-
-  // ---------- live (mock model) ----------
-  errors.length = 0;
-  await page.goto(LIVE + "/try/", { waitUntil: "networkidle" });
-  await page.waitForFunction(() => !document.getElementById("mLive").disabled, null, { timeout: 5000 });
-  await page.click("#mLive");
-  ok(await page.locator("#starters button").count() === 4, "live shows starter prompts");
-  await page.locator("#starters button").first().click();
-  await page.waitForFunction(() => document.querySelectorAll(".msg.a").length >= 1, null, { timeout: 15000 });
-  await page.fill("#liveIn", "Please remember that I prefer short answers."); await page.press("#liveIn", "Enter");
-  await page.waitForFunction(() => document.querySelectorAll(".msg.a").length >= 2, null, { timeout: 15000 });
-  ok(await page.locator(".tc").count() >= 2, "live chat ran tools in the page");
-  const tok = await page.locator("#tok").innerText();
-  ok(Number(tok.replace(/,/g, "")) > 0, "token meter counts live usage: " + tok);
-  await page.click("#bEnd");
-  await page.click("#bDream");
-  await page.waitForSelector("#bOk", { timeout: 60000 });
-  const lp = await page.locator("#mem").innerText();
-  ok(/completed/.test(lp) && /_index\.md/.test(lp), "live dream (real engine through the proxy) produced a proposal with the index");
-  await page.screenshot({ path: SHOTS + "/try-live.png" });
-  await page.click("#bOk");
-  ok(Object.keys(await page.evaluate(() => document.querySelectorAll(".tree button").length)).length >= 0 && (await page.locator("#cW").innerText()) !== "0", "live wiki has pages after approve");
-  await page.click("#bNew");
-  ok(/wiki index/.test(await page.locator(".msg.t").first().innerText()), "the next live session loads the wiki index");
-  ok(errors.length === 0, "no console errors (live): " + errors.join(" | "));
 
   // ---------- mobile ----------
   const m = await browser.newPage({ viewport: { width: 375, height: 800 } });

@@ -14,7 +14,7 @@ const NX = ENV.QUIREN_HOME;
 const S = (space) => new Store(NX, space);
 const cli = (args, opts) => runCli(ENV, args, opts);
 const { t, done } = suite("cli-behaviors");
-const KEY = { QUIREN_LLM_PROVIDER: "anthropic", QUIREN_LLM_API_KEY: "mock-key-not-real", MOCK_LLM: "1" };
+const KEY = { QUIREN_LLM_MODEL: "mock-model", MOCK_LLM: "1" };
 const logEvents = (space, id, text) => cli(["log", "--space", space, "--id", id, "-"], { input: JSON.stringify([{ role: "user", content: text }, { role: "assistant", content: "ok" }]) });
 const mkdir = (...p) => {
   const d = path.join(tmp, ...p);
@@ -97,7 +97,7 @@ await t("dream: organizer failure after analyzers wrote = PARTIAL proposal, exit
   assert.equal(r.code, 1, r.out + r.err);
   assert.match(r.out, /\* \[organizer\] Organizer did not finish\./);
   assert.match(r.out, /Proposal dream-\S+ \(review, PARTIAL\): 1 added, 0 modified, 0 removed\n  added    \/p1\.md\n/);
-  assert.match(r.out, /WARNING: the dream did not finish cleanly \(status failed: Organizer failed: Anthropic API error 400 \(invalid_request_error\): mock bad request\)\. Review the diff carefully/);
+  assert.match(r.out, /WARNING: the dream did not finish cleanly \(status failed: Organizer failed: OpenAI-compatible API error 400 \(invalid_request_error\): mock bad request\)\. Review the diff carefully/);
   assert.match(r.out, /--apply was not honoured because the run was partial\.\nNext steps:/);
   assert.equal(S("partial").wikiCount(), 0);
   assert.match(cli(["proposals", "--space", "partial"]).out, /^dream-\S+  review   PARTIAL  \S+  1 change\(s\)\n$/);
@@ -121,8 +121,8 @@ await t("dream: a run that fails and writes nothing leaves no proposal, keeps in
   logEvents("broken", "b1", "anything");
   const r = cli(["dream", "--space", "broken", "--yes"], { mock: true, extraEnv: { ...KEY, MOCK_LLM_MODE: "fail" } });
   assert.equal(r.code, 1);
-  assert.match(r.out, /! error: Analyzer b1 failed: Anthropic API error 400 \(invalid_request_error\): mock bad request/);
-  assert.match(r.out, /The dream ended with status "failed" and wrote nothing: All 1 analyzer\(s\) failed\. First error: Anthropic API error 400 \(invalid_request_error\): mock bad request\. Inputs stay pending\.\n$/);
+  assert.match(r.out, /! error: Analyzer b1 failed: OpenAI-compatible API error 400 \(invalid_request_error\): mock bad request/);
+  assert.match(r.out, /The dream ended with status "failed" and wrote nothing: All 1 analyzer\(s\) failed\. First error: OpenAI-compatible API error 400 \(invalid_request_error\): mock bad request\. Inputs stay pending\.\n$/);
   const s = S("broken");
   assert.deepEqual(s.listProposals(), []);
   assert.deepEqual(fs.existsSync(s.proposalsDir) ? fs.readdirSync(s.proposalsDir) : [], []);
@@ -311,12 +311,12 @@ await t("doctor: home that is a file fails, a home not yet created passes, many 
   fs.mkdirSync(path.join(s.proposalsDir, "dream-x"), { recursive: true });
   fs.writeFileSync(path.join(s.proposalsDir, "dream-x", "proposal.json"), "[]");
   assert.match(cli(["doctor", "--space", "manybad"]).out, /FAIL  space files: 8 unreadable of 8 in space "manybad": .*, and 3 more\n/);
-  const oai = cli(["doctor", "--space", "x"], { extraEnv: { QUIREN_LLM_PROVIDER: "openai" } }).out;
-  const loc = cli(["doctor"]).out; // no provider set: a model on this machine is the default
-  assert.match(loc, /PASS  llm config: provider local; base URL http:\/\/localhost:11434\/v1; model first installed \(auto\); no key needed/);
-  assert.match(oai, /WARN  llm config: provider openai; api key missing; base URL default http:\/\/localhost:20128\/v1; analyzer model missing; organizer model missing\n      hint: Set QUIREN_LLM_API_KEY \(or OPENAI_API_KEY\), or use a model on this machine with QUIREN_LLM_PROVIDER=local, or dream through your agent \(no key\)\. Set QUIREN_ANALYZER_MODEL\. Set QUIREN_ORGANIZER_MODEL\. Needed only for `quiren dream`\./);
-  const ok = cli(["doctor", "--space", "x"], { extraEnv: { QUIREN_LLM_PROVIDER: "anthropic", QUIREN_LLM_API_KEY: "k", QUIREN_LLM_BASE_URL: "http://x" } }).out;
-  assert.match(ok, /PASS  llm config: provider anthropic; api key set; base URL set; analyzer model claude-haiku-5-5 \(default\); organizer model claude-haiku-5-5 \(default\)\n      hint: Not tested against the network\./);
+  const loc = cli(["doctor"]).out; // nothing set: a model on this machine
+  assert.match(loc, /PASS  llm config: local model; base URL http:\/\/localhost:11434\/v1; model first installed \(auto\); no key needed/);
+  const lm = cli(["doctor", "--space", "x"], { extraEnv: { QUIREN_LLM_BASE_URL: "http://127.0.0.1:1234/v1", QUIREN_LLM_MODEL: "gemma3" } }).out;
+  assert.match(lm, /PASS  llm config: local model; base URL http:\/\/127\.0\.0\.1:1234\/v1; model gemma3; no key needed/);
+  const paid = cli(["doctor", "--space", "x"], { extraEnv: { QUIREN_LLM_PROVIDER: "anthropic" } });
+  assert.match(paid.out, /FAIL  llm config: QUIREN_LLM_PROVIDER "anthropic" is not supported/);
   assert.match(cli(["doctor", "--space", "partial"]).out, /PASS  pending work: 1 pending transcript\(s\), 1 proposal\(s\) awaiting review\n      hint: Run: quiren proposals, then quiren diff \/ apply \/ reject\./);
 });
 

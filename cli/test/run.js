@@ -23,7 +23,7 @@ const HOME = path.join(tmp, "home");
 const NHOME = path.join(tmp, "nx");
 fs.mkdirSync(HOME, { recursive: true });
 const BASE_ENV = Object.fromEntries(
-  Object.entries({ QUIREN_LLM_PROVIDER: "anthropic", QUIREN_HOME: NHOME, HOME, USERPROFILE: HOME, PATH: "", SystemRoot: process.env.SystemRoot, TEMP: tmp, TMP: tmp }).filter(([, v]) => v !== undefined),
+  Object.entries({ QUIREN_LLM_BASE_URL: "http://127.0.0.1:9/v1", QUIREN_HOME: NHOME, HOME, USERPROFILE: HOME, PATH: "", SystemRoot: process.env.SystemRoot, TEMP: tmp, TMP: tmp }).filter(([, v]) => v !== undefined),
 );
 
 let pass = 0;
@@ -219,7 +219,7 @@ await t("import omp: by cwd, --all into each session's space, --session, idempot
 });
 
 // ------------------------------------------------------------------------------------------------ dream (CLI)
-const KEY_ENV = { QUIREN_LLM_API_KEY: "mock-key-not-real" };
+const KEY_ENV = { QUIREN_LLM_MODEL: "mock-model" };
 await t("dream: refusals and checks before anything is sent (exit codes 0/2)", () => {
   cli(["remember", "--space", "dreamy", "the staging host is stage.example.internal"]);
   for (const id of ["t1", "t2"]) {
@@ -232,12 +232,12 @@ await t("dream: refusals and checks before anything is sent (exit codes 0/2)", (
   const over = cli(["dream", "--space", "dreamy", "--budget", "1000"], { env: KEY_ENV });
   assert.equal(over.code, 2);
   assert.match(over.err, /is above the budget \(1,000\)\. Dream less: pass --since DATE/);
-  const nokey = cli(["dream", "--space", "dreamy", "--yes"]);
-  assert.equal(nokey.code, 2);
-  assert.match(nokey.err, /No API key for provider "anthropic"\. Set QUIREN_LLM_API_KEY \(or ANTHROPIC_API_KEY\)\./);
+  const noserver = cli(["dream", "--space", "dreamy", "--yes"]);
+  assert.equal(noserver.code, 2);
+  assert.match(noserver.err, /No local model server at http:\/\/127\.0\.0\.1:9\/v1\. Start Ollama/);
   assert.match(cli(["dream", "--space", "dreamy"], { env: KEY_ENV }).err, /Not a terminal: pass --yes/);
   assert.equal(cli(["dream", "--space", "dreamy", "--yes"], { env: { ...KEY_ENV, QUIREN_LLM_PROVIDER: "gemini" } }).code, 2);
-  assert.match(cli(["dream", "--space", "dreamy", "--yes"], { env: { ...KEY_ENV, QUIREN_LLM_PROVIDER: "openai" } }).err, /needs models: set QUIREN_LLM_MODEL/);
+  assert.match(cli(["dream", "--space", "dreamy", "--yes"], { env: { ...KEY_ENV, QUIREN_LLM_PROVIDER: "anthropic" } }).err, /Quiren dreams on a local model only/);
   assert.equal(cli(["dream", "--space", "dreamy", "--since", "2026-02-30"]).code, 2);
   assert.equal(cli(["dream", "--space", "dreamy", "--max-inputs", "201"]).code, 2);
   assert.match(cli(["dream", "--space", "dreamy", "--min-pending", "1"]).err, /--min-pending only applies together with --if-due/);
@@ -248,22 +248,22 @@ await t("dream: refusals and checks before anything is sent (exit codes 0/2)", (
   assert.match(cli(["dream", "--space", "nothing-here", "--dry-run"]).out, /Nothing to dream about yet\./);
 });
 
-await t("dream with Anthropic (mocked): analyzers + organizer, proposal, proposals/diff/apply, inputs consumed", () => {
-  const log = path.join(tmp, "anthropic.log");
+await t("dream on a local model (mocked): analyzers + organizer, proposal, proposals/diff/apply, inputs consumed", () => {
+  const log = path.join(tmp, "local.log");
   const r = cli(["dream", "--space", "dreamy", "--yes", "--instructions", "Focus on test commands"], { mock: true, env: { ...KEY_ENV, MOCK_LLM: "1", MOCK_LLM_LOG: log } });
   assert.equal(r.code, 0, r.out + r.err);
   assert.match(r.out, /Dreaming \(proposal dream-\d{14}-[0-9a-f]{6}\) \.\.\./);
   assert.match(r.out, /\* Analyzing 3 input\(s\)\./);
   assert.match(r.out, /\* \[organizer\] Organizer finished\./);
-  assert.match(r.out, /Tokens used: 13,200 \(input 12000, output 1200, cache read 0, cache write 0\)/);
+  assert.match(r.out, /Model: mock-model \(local, http:\/\/127\.0\.0\.1:9\/v1\)/);
+  assert.match(r.out, /Tokens used: [\d,]+ \(input \d+, output \d+/);
   assert.match(r.out, /Proposal (dream-\S+) \(review\): 4 added, 0 modified, 0 removed/);
   assert.match(r.out, /  added    \/_index\.md\n  added    \/notes\.md\n  added    \/t1\.md\n  added    \/t2\.md/);
   assert.match(r.out, /Next steps:\n  quiren diff dream-/);
   const calls = fs.readFileSync(log, "utf8").trim().split("\n").map((l) => JSON.parse(l));
   assert.equal(calls.length, 12);
-  assert.ok(calls.every((c) => c.url === "https://api.anthropic.com/v1/messages" && c.model === "claude-haiku-5-5"));
-  assert.equal(calls[0].headers["x-api-key"], "mock-key-not-real");
-  assert.equal(calls[0].headers["anthropic-version"], "2023-06-01");
+  assert.ok(calls.every((c) => c.url === "http://127.0.0.1:9/v1/chat/completions" && c.model === "mock-model"));
+  assert.equal(calls[0].headers.authorization, undefined, "no key is sent to a local server");
   assert.equal(calls.filter((c) => c.role === "organizer").length, 3);
   // live wiki untouched until apply
   assert.equal(store("dreamy").wikiCount(), 0);
@@ -282,10 +282,10 @@ await t("dream with Anthropic (mocked): analyzers + organizer, proposal, proposa
   assert.match(cli(["dream", "--space", "dreamy", "--dry-run"]).out, /Nothing to dream about yet/);
 });
 
-await t("dream with an OpenAI-compatible endpoint (mocked), --apply", () => {
+await t("dream on a local server with its own base URL, models and key (mocked), --apply", () => {
   cli(["log", "--space", "oai", "--id", "o1", "-"], { input: JSON.stringify([{ role: "user", content: "the cache lives in redis" }]) });
   const log = path.join(tmp, "openai.log");
-  const env = { ...KEY_ENV, MOCK_LLM: "1", MOCK_LLM_LOG: log, QUIREN_LLM_PROVIDER: "openai", QUIREN_LLM_BASE_URL: "http://mock.local/v1/", QUIREN_ANALYZER_MODEL: "mock-analyzer", QUIREN_ORGANIZER_MODEL: "mock-organizer" };
+  const env = { MOCK_LLM: "1", MOCK_LLM_LOG: log, QUIREN_LLM_API_KEY: "mock-key-not-real", QUIREN_LLM_BASE_URL: "http://mock.local/v1/", QUIREN_ANALYZER_MODEL: "mock-analyzer", QUIREN_ORGANIZER_MODEL: "mock-organizer" };
   const r = cli(["dream", "--space", "oai", "-y", "--apply"], { mock: true, env });
   assert.equal(r.code, 0, r.out + r.err);
   assert.match(r.out, /Applied: 2 path\(s\) written\./);
@@ -584,9 +584,9 @@ await t("doctor: PASS/WARN/FAIL lines, --json, exit 1 on FAIL, key never printed
   assert.match(ok.out, /PASS  space files: \d+ file\(s\)\/record\(s\) parse cleanly in space "review"/);
   assert.match(ok.out, /PASS  claude hooks: ~\/\.claude not found/);
   assert.match(ok.out, /PASS  mcp \(claude\): `claude` not found on PATH; skipped/);
-  assert.match(ok.out, /WARN  llm config: provider anthropic; api key missing; base URL default \(Anthropic API\); analyzer model claude-haiku-5-5 \(default\); organizer model claude-haiku-5-5 \(default\)/);
+  assert.match(ok.out, /PASS  llm config: local model; base URL http:\/\/127\.0\.0\.1:9\/v1; model first installed \(auto\); no key needed/);
   assert.match(ok.out, /PASS  pending work: /);
-  assert.equal(lines.at(-1), "Result: OK with 1 warning(s)");
+  assert.equal(lines.at(-1), "Result: OK");
   const withKey = cli(["doctor", "--space", "review", "--json"], { env: { QUIREN_LLM_API_KEY: "very-secret-value" } });
   const checks = JSON.parse(withKey.out);
   assert.deepEqual(checks.map((c) => c.name), ["node", "home", "space files", "claude hooks", "mcp (claude)", "mcp (codex)", "llm config", "pending work"]);

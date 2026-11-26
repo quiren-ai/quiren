@@ -90,17 +90,16 @@ quiren retention --days 90</code></pre>
           <tr><td><code>retention</code></td><td>Remove old dreamed transcripts and history. <code>--days N</code> (default 30)</td></tr>
         </table>
         <h3 id="flags">Common flags, exit codes, environment</h3>
-        <p><code>--space NAME</code> picks the space for any command that acts on one. Exit codes: <code>0</code> success, <code>2</code> a usage problem (unknown command, bad flag, or a dream with no API key, model or local server, with a message saying what to set), <code>1</code> anything else. <code>hook</code> always exits <code>0</code>, so it can never block a session.</p>
+        <p><code>--space NAME</code> picks the space for any command that acts on one. Exit codes: <code>0</code> success, <code>2</code> a usage problem (unknown command, bad flag, or a dream with no local model server, with a message saying what to set), <code>1</code> anything else. <code>hook</code> always exits <code>0</code>, so it can never block a session.</p>
         <table>
           <tr><th>Variable</th><th>Meaning</th></tr>
           <tr><td><code>QUIREN_HOME</code></td><td>Storage root. Default <code>~/.quiren</code>.</td></tr>
           <tr><td><code>QUIREN_SPACE</code></td><td>Space when <code>--space</code> is not given. Default: the current folder's name.</td></tr>
-          <tr><td><code>QUIREN_LLM_PROVIDER</code></td><td><code>local</code> (default: a model on your machine, no key), <code>anthropic</code> (needs a key) or <code>openai</code> (any OpenAI-compatible endpoint).</td></tr>
-          <tr><td><code>QUIREN_LLM_API_KEY</code></td><td>API key. Falls back to <code>ANTHROPIC_API_KEY</code> (anthropic) or <code>OPENAI_API_KEY</code> (openai).</td></tr>
-          <tr><td><code>QUIREN_LLM_BASE_URL</code></td><td>Endpoint base URL. Default for local: <code>http://localhost:11434/v1</code> (Ollama); LM Studio is <code>http://localhost:1234/v1</code>. Default for openai: <code>http://localhost:20128/v1</code>.</td></tr>
-          <tr><td><code>QUIREN_LLM_MODEL</code></td><td>One model for both roles. On local it is optional: the first installed model is used.</td></tr>
-          <tr><td><code>QUIREN_ANALYZER_MODEL</code></td><td>Model for analyzers. Default <code>claude-haiku-5-5</code> on anthropic; required on openai.</td></tr>
-          <tr><td><code>QUIREN_ORGANIZER_MODEL</code></td><td>Model for the organizer. Same defaults.</td></tr>
+          <tr><td><code>QUIREN_LLM_API_KEY</code></td><td>Only if your local server asks for a key. Never needed for Ollama.</td></tr>
+          <tr><td><code>QUIREN_LLM_BASE_URL</code></td><td>Your local model server. Default <code>http://localhost:11434/v1</code> (Ollama); LM Studio is <code>http://localhost:1234/v1</code>.</td></tr>
+          <tr><td><code>QUIREN_LLM_MODEL</code></td><td>Model for both roles. Optional: the first installed model is used.</td></tr>
+          <tr><td><code>QUIREN_ANALYZER_MODEL</code></td><td>Model for the analyzers, if different from <code>QUIREN_LLM_MODEL</code>.</td></tr>
+          <tr><td><code>QUIREN_ORGANIZER_MODEL</code></td><td>Model for the organizer, if different from <code>QUIREN_LLM_MODEL</code>.</td></tr>
           <tr><td><code>QUIREN_PROMPT_RECALL</code></td><td><code>0</code> turns off the recall that the prompt hook adds.</td></tr>
           <tr><td><code>QUIREN_DEBUG</code></td><td><code>1</code> prints full stack traces on errors.</td></tr>
         </table>
@@ -147,12 +146,13 @@ codex mcp add quiren -- npx -y quiren mcp
           <li>The staged changes become a proposal for you to review.</li>
         </ol>
         <p>The agents only have document tools (<code>list_docs</code>, <code>read_doc</code>, <code>grep_docs</code>, <code>write_doc</code>, <code>edit_doc</code>, <code>delete_doc</code>, <code>rename_doc</code>, <code>submit</code>). There is no shell, network or file access.</p>
-        <h3>Providers: your machine first</h3>
+        <h3>Models: on your machine</h3>
         <ul>
-          <li><strong>Local model (default).</strong> Run Ollama or LM Studio; <code>quiren dream</code> uses the first installed model, or the one in <code>QUIREN_LLM_MODEL</code>. No key, nothing leaves your machine and nothing is billed. Larger models (8B and up) write better pages.</li>
-          <li><strong>An API, if you choose it.</strong> <code>QUIREN_LLM_PROVIDER=anthropic</code> with <code>ANTHROPIC_API_KEY</code>, or <code>QUIREN_LLM_PROVIDER=openai</code> with <code>QUIREN_LLM_BASE_URL</code> for any OpenAI-compatible endpoint with tool calling.</li>
+          <li><strong>Ollama (default).</strong> <code>quiren dream</code> uses the first installed model, or the one in <code>QUIREN_LLM_MODEL</code>. Larger models (8B and up) write better pages.</li>
+          <li><strong>LM Studio or llama.cpp.</strong> Start its server and set <code>QUIREN_LLM_BASE_URL</code>, for example <code>http://localhost:1234/v1</code>. Any local server with the OpenAI-compatible chat API and tool calling works.</li>
         </ul>
-        <p>Details: Choose models with <code>QUIREN_ANALYZER_MODEL</code> and <code>QUIREN_ORGANIZER_MODEL</code> (default <code>claude-haiku-5-5</code> for Anthropic; required for an OpenAI-compatible endpoint). Transient errors (429, 5xx, 529) are retried with backoff; the key never appears in output.</p>
+        <p>No key, nothing leaves your machine and nothing is billed. Quiren never calls a hosted model API.</p>
+        <p>Transient errors (429, 5xx) are retried with backoff.</p>
         <h3>Token budgets</h3>
         <p><code>--budget TOKENS</code> caps a run (default 3,000,000; a dream whose estimate is above it is refused). The cap is checked before each model call, so a run can overshoot only by the calls already in flight. You see progress at 50, 80 and 100 percent.</p>
         <h3>Without a key</h3>
@@ -167,7 +167,7 @@ codex mcp add quiren -- npx -y quiren mcp
           <li>Secret patterns (API keys, tokens, private keys, JWTs, credentials in URLs and assignments) are replaced with <code>[REDACTED:kind]</code> before anything is written, including what a dream writes. This catches known patterns, not everything.</li>
           <li>A dream only writes a proposal. Applying is always a command you run; a page changed since the dream started is skipped.</li>
           <li>Every config file init edits is backed up first. Page paths are validated, so nothing is written outside the memory folder.</li>
-          <li>No telemetry. The only network traffic is a dream with your key, to the provider you set. A local dream stays on your machine.</li>
+          <li>No telemetry and no hosted model: a dream runs on the local model server you point it at, and nothing leaves your machine.</li>
         </ul>
 
         <h2 id="examples">Examples</h2>
@@ -185,11 +185,6 @@ quiren dream --if-due --yes --space orbit-api</code></pre>
         <pre><code>ollama pull qwen3:8b               # once
 export QUIREN_LLM_PROVIDER=local
 quiren dream                       # uses the first installed model, or set QUIREN_LLM_MODEL</code></pre>
-        <h3>Dream with an OpenAI-compatible endpoint</h3>
-        <pre><code>export QUIREN_LLM_PROVIDER=openai
-export QUIREN_LLM_BASE_URL=http://localhost:20128/v1
-export QUIREN_ANALYZER_MODEL=your-model QUIREN_ORGANIZER_MODEL=your-model
-quiren dream --budget 500000</code></pre>
         <h3>Review before anything changes</h3>
         <pre><code>quiren dream --dry-run     # show what would be selected and the estimate
 quiren dream --yes
@@ -200,9 +195,7 @@ quiren restore /deploys.md --version 2</code></pre>
 
         <h2 id="troubleshooting">Troubleshooting</h2>
         <h3>Start with doctor</h3>
-        <p><code>quiren doctor</code> checks Node, the memory folder, the hooks, the MCP registration and the LLM settings, one PASS / WARN / FAIL line each, with a hint for every warning. It never changes anything.</p>
-        <h3>"No API key for provider"</h3>
-        <p>Set <code>QUIREN_LLM_API_KEY</code> (or <code>ANTHROPIC_API_KEY</code>) for <code>quiren dream</code>. Without a key: set <code>QUIREN_LLM_PROVIDER=local</code> to use Ollama or LM Studio on your machine, or dream through your agent with <code>dream_prepare</code> / <code>dream_submit</code>.</p>
+        <p><code>quiren doctor</code> checks Node, the memory folder, the hooks, the MCP registration and the local model settings, one PASS / WARN / FAIL line each, with a hint for every warning. It never changes anything.</p>
         <h3>"No local model server"</h3>
         <p>Start Ollama (<code>ollama serve</code>, or open the app) and pull a model, for example <code>ollama pull qwen3:8b</code>. For LM Studio, start its server and set <code>QUIREN_LLM_BASE_URL=http://localhost:1234/v1</code>.</p>
         <h3>The dream was refused: estimate above the budget</h3>
@@ -223,7 +216,7 @@ quiren restore /deploys.md --version 2</code></pre>
         <p>Local: notes, transcripts, wiki and history are files under <code>~/.quiren</code>. Dreaming sends transcripts, notes and wiki pages to the LLM you configure, and nowhere else. Delete the folder to delete the memory. More on the <a href="/privacy/">privacy page</a>.</p>
 
         <h2 id="faq">FAQ</h2>
-        <h3>Do I need an API key?</h3><p>No. <code>quiren dream</code> runs on a local model by default, and you can also dream through the agent you already use. A key is only for when you choose a hosted API.</p>
+        <h3>Do I need an API key?</h3><p>No. <code>quiren dream</code> runs on a model on your machine (Ollama or LM Studio), and you can also dream through the agent you already use.</p>
         <h3>Which agents work?</h3><p>Claude Code, Codex, Hermes, Cursor, Claude Desktop, and any MCP client over stdio. Not yet tested in every MCP client.</p>
         <h3>Can I edit the wiki by hand?</h3><p>Yes. It is plain markdown. A dream that started before your edit will not overwrite it.</p>
         <h3>How do I uninstall?</h3><p>Remove the hooks from <code>~/.claude/settings.json</code> (or restore the <code>.quiren-bak</code> backup), remove the MCP server from your client, and delete <code>~/.quiren</code>.</p>
