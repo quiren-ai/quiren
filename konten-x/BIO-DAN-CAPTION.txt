@@ -1,0 +1,115 @@
+QUIREN · PAKET X
+(catatan dalam bahasa Indonesia, caption dalam bahasa Inggris; caption sengaja pendek 2-4 kata,
+link cuma di bio)
+
+==================================================================
+DOMAIN · NAMA · USERNAME
+==================================================================
+
+Domain   : quirenrh.com   (udah LIVE, HTTPS) -> https://quirenrh.com
+Nama X   : Quiren
+Username : @quirenrh   (sama persis dengan domain, gampang diingat)
+           Cadangan kalau udah dipakai orang: @quiren_ai (sama dengan GitHub quiren-ai)
+           · @usequiren · @quirenmemory
+           (ketersediaan username di X belum bisa dicek karena X minta login; cek pas daftar)
+
+Kenapa nama ini: "quire" itu kumpulan lembaran yang dijilid jadi buku. Logonya cincin Q yang
+ngumpulin dua lembar ke pojoknya: lembar kecil = yang udah diingat agent, lembar besar = yang
+ditambah dream berikutnya. Tagline: "Memory your agent keeps, clear as ice."
+
+==================================================================
+PROFIL X
+==================================================================
+
+Bio (pilih satu):
+A (utama, 138 karakter):
+Memory your agent keeps, clear as ice. Long-term memory for AI coding agents, in plain files on your machine. You approve every page. $QRN
+
+B (lebih pendek):
+Long-term memory for AI coding agents. Runs on your machine, no key. npx quiren init · $QRN
+
+C (paling kalem):
+Memory your agent keeps. $QRN
+
+Lokasi   : Robinhood Chain
+Website  : quirenrh.com
+Foto     : 1-PROFIL-X/quiren-profile-1000.png  (logo resmi: mark chrome cincin Q + dua lembar,
+           sama persis dengan favicon dan logo di web, di atas tinta gelap dengan cahaya
+           terakota tipis; X motong bulat, mark-nya pas di tengah). Versi kecil: -400.png
+Banner   : 1-PROFIL-X/quiren-banner-3000x1000.png  (adegan 3D asli dari web, dirender engine
+           situs langsung di rasio 3:1: kristal es dengan inti terakota di gurun basah; logo,
+           tagline, "npx quiren init" dan quirenrh.com di langit kanan atas; pojok kiri bawah
+           aman karena ketutup foto profil). Versi 1500x500 juga ada.
+
+==================================================================
+GMGN / PONS / TOKEN
+==================================================================
+
+Nama        : Quiren
+Ticker      : QRN
+Logo        : 5-COIN/quiren-coin-1000.png   (PNG transparan, bulat: inti gelap yang menyala
+              terakota dari dalam, cincin es beku, bezel chrome, tulisan terukir melingkar
+              "QUIREN · MEMORY YOUR AGENT KEEPS · CLEAR AS ICE · $QRN", mark chrome di tengah)
+              Kalau diminta kotak tanpa transparan: quiren-coin-on-dark-1000.png
+              (kecil: -512, gede: -2000)
+              Kalau tempatnya terima GIF: quiren-coin-spin.gif
+Website     : https://quirenrh.com
+X           : https://x.com/quirenrh
+GitHub      : https://github.com/quiren-ai/quiren
+Deskripsi   :
+Memory your agent keeps, clear as ice. Quiren is long-term memory for AI coding agents: notes, sessions and a small wiki in plain files on your machine, read before every answer. A dream on your local model proposes changes; you approve every page. Open source, MIT. npx quiren init
+
+==================================================================
+ISI FOLDER
+==================================================================
+
+1-PROFIL-X   foto profil + banner
+2-VIDEO      quiren-demo-1080p.mp4  (50 detik, 1920x1080, ada backsound)
+             quiren-backsound-thaw.wav / .mp3  (backsound sendiri, lihat bawah)
+3-GIF        quiren-ice     kristal & inti terakota berputar (rekaman asli web), 12 dtk
+             quiren-mark    logo terbentuk: cincin digambar, dua lembar dikumpulin, 5 dtk
+             quiren-recall  remember lalu recall, output CLI asli, 8 dtk
+             quiren-coin    coin berputar, 4 dtk
+             Tiap GIF ada versi .mp4 yang ada suaranya (lebih tajam di X, pakai ini kalau bisa)
+4-FOTO       01 memory-clear-as-ice · 02 no-key-nothing-billed · 03 plain-files-you-own (1080x1350)
+5-COIN       logo coin (PNG transparan) + coin spin GIF/MP4
+_kerja       studio Remotion, script rekam web, script musik (bisa render ulang: bash render.sh)
+
+Semua visual 3D diambil dari web asli (quirenrh.com) yang direkam frame per frame, bukan
+gambar karangan. Adegan "dream" dan "approve" di video diambil dari simulasi /try di web.
+Output terminal di video dan GIF recall adalah output asli CLI quiren.
+
+Backsound "Thaw": dibuat sendiri dari nol (sintesis, tanpa sample), bebas dipakai di mana aja.
+Konsepnya es di gurun basah waktu subuh dengan inti hangat di dalamnya: pad lembut hangat,
+bunyi kaca yang dipukul kayak mangkuk es, piano felt yang mainin 3 nada motif logo (B E F#)
+di tiap chapter, dan satu tetes air tiap kali sesuatu disimpan. Waktunya pas sama adegan video.
+
+==================================================================
+CAPTION (urutan posting)
+==================================================================
+
+1. Video demo        2-VIDEO/quiren-demo-1080p.mp4
+   Memory, kept clear.
+
+2. GIF kristal       3-GIF/quiren-ice.mp4
+   Clear as ice.
+
+3. Foto              4-FOTO/01-memory-clear-as-ice.jpg
+   Your agent remembers.
+
+4. GIF recall        3-GIF/quiren-recall.mp4
+   Saved. Recalled.
+
+5. Foto              4-FOTO/03-plain-files-you-own.jpg
+   Plain files. Yours.
+
+6. Foto              4-FOTO/02-no-key-nothing-billed.jpg
+   No key. Nothing billed.
+
+7. GIF logo          3-GIF/quiren-mark.mp4
+   Gathered, then kept.
+
+8. Coin              5-COIN/quiren-coin-spin.mp4
+   $QRN, held in ice.
+
+Caption cadangan: "Nothing lands unapproved." · "Read before every answer." · "Dream. Review. Keep."

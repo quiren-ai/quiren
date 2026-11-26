@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, GithubLogo } from "@phosphor-icons/react";
+import { Check, Copy, GithubLogo, XLogo } from "@phosphor-icons/react";
 import { NpmMark } from "@/components/brand";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -327,6 +327,10 @@ export function Landing() {
               <a href={SOURCE.npm.href} target="_blank" rel="noreferrer" aria-label={`Package on npm: ${SOURCE.npm.short}`}>
                 <NpmMark size={14} />
                 <span>{SOURCE.npm.short}</span>
+              </a>
+              <a href={SOURCE.x.href} target="_blank" rel="noreferrer" aria-label={`Quiren on X: ${SOURCE.x.short}`}>
+                <XLogo size={14} weight="bold" aria-hidden />
+                <span>{SOURCE.x.short}</span>
               </a>
             </span>
           </div>

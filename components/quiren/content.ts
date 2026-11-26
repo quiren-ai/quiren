@@ -11,6 +11,7 @@ export const INSTALL = "npx quiren init";
 export const SOURCE = {
   github: { label: "GitHub", href: "https://github.com/quiren-ai/quiren", short: "quiren-ai/quiren" },
   npm: { label: "npm", href: "https://www.npmjs.com/package/quiren", short: `quiren ${cli.version}` },
+  x: { label: "X", href: "https://x.com/quirenrh", short: "@quirenrh" },
 };
 
 export type Link = { label: string; href: string };

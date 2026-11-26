@@ -6,7 +6,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3610";
 const SITE_TITLE = "Quiren · Memory your agent keeps, clear as ice";
 const SITE_DESCRIPTION =
   "Long-term memory for AI coding agents. Notes, transcripts and a small markdown wiki live as plain files on your machine; a dream pass proposes changes and you approve every one. CLI, MCP server and Claude Code hooks.";
-const X_HANDLE = process.env.NEXT_PUBLIC_X_HANDLE || "";
+const X_HANDLE = process.env.NEXT_PUBLIC_X_HANDLE || "@quirenrh";
 
 // Inter Tight sets the display at regular weight with tight tracking; Inter carries the text.
 const tight = Inter_Tight({ subsets: ["latin"], weight: ["300", "400", "500"], variable: "--font-tight", display: "swap" });

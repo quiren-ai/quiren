@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, GithubLogo, List, X as XIcon } from "@phosphor-icons/react";
+import { ArrowRight, GithubLogo, List, X as XIcon, XLogo } from "@phosphor-icons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useState } from "react";
@@ -9,7 +9,6 @@ import { cn } from "@/lib/utils";
 import { NAV, SOURCE } from "./content";
 import { LiquidGlass, LiquidGlassDefs } from "./liquid-glass";
 
-const X_URL = process.env.NEXT_PUBLIC_X_URL || "";
 
 /** The round glass arrow every primary action carries. */
 export function Chip({ dark }: { dark?: boolean }) {
@@ -80,6 +79,9 @@ export function SiteHeader({ light, headerRef }: { light?: boolean; headerRef?: 
           <LiquidGlass as="a" href={SOURCE.npm.href} target="_blank" rel="noreferrer" variant="smoked-pill" className="ix-ico" aria-label="Package on npm" title={`npm: ${SOURCE.npm.short}`}>
             <NpmMark size={17} />
           </LiquidGlass>
+          <LiquidGlass as="a" href={SOURCE.x.href} target="_blank" rel="noreferrer" variant="smoked-pill" className="ix-ico" aria-label="Quiren on X" title={`X: ${SOURCE.x.short}`}>
+            <XLogo size={17} weight="bold" aria-hidden />
+          </LiquidGlass>
           <LiquidGlass as={Link} href="/docs#quickstart" variant="smoked-pill" className="ix-frost">
             Get started
             <Chip dark />
@@ -104,6 +106,9 @@ export function SiteHeader({ light, headerRef }: { light?: boolean; headerRef?: 
             <a href={SOURCE.npm.href} target="_blank" rel="noreferrer">
               <NpmMark size={17} /> npm
             </a>
+            <a href={SOURCE.x.href} target="_blank" rel="noreferrer">
+              <XLogo size={17} weight="bold" aria-hidden /> X
+            </a>
           </div>
         </div>
       )}
@@ -127,11 +132,9 @@ export function SiteFooter({ onDark }: { onDark?: boolean }) {
         <a href={SOURCE.npm.href} target="_blank" rel="noreferrer" className="ix-foot-src">
           <NpmMark size={13} /> npm
         </a>
-        {X_URL && (
-          <a href={X_URL} target="_blank" rel="noreferrer">
-            X
-          </a>
-        )}
+        <a href={SOURCE.x.href} target="_blank" rel="noreferrer" className="ix-foot-src">
+          <XLogo size={13} weight="bold" aria-hidden /> X
+        </a>
       </nav>
     </footer>
   );
