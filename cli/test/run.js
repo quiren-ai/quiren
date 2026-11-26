@@ -23,7 +23,7 @@ const HOME = path.join(tmp, "home");
 const NHOME = path.join(tmp, "nx");
 fs.mkdirSync(HOME, { recursive: true });
 const BASE_ENV = Object.fromEntries(
-  Object.entries({ QUIREN_HOME: NHOME, HOME, USERPROFILE: HOME, PATH: "", SystemRoot: process.env.SystemRoot, TEMP: tmp, TMP: tmp }).filter(([, v]) => v !== undefined),
+  Object.entries({ QUIREN_LLM_PROVIDER: "anthropic", QUIREN_HOME: NHOME, HOME, USERPROFILE: HOME, PATH: "", SystemRoot: process.env.SystemRoot, TEMP: tmp, TMP: tmp }).filter(([, v]) => v !== undefined),
 );
 
 let pass = 0;

@@ -847,12 +847,12 @@ await t("--since parsing and --if-due reasons (cooldown, idle, since)", () => {
 });
 
 await t("LLM config: provider case, key precedence and fallbacks, default models and base URLs", () => {
-  assert.deepEqual(resolveLlmConfig({ ANTHROPIC_API_KEY: "a" }), { llm: { provider: "anthropic", apiKey: "a" }, models: { analyzer: "claude-haiku-5-5", organizer: "claude-haiku-5-5" } });
-  assert.equal(resolveLlmConfig({ ANTHROPIC_API_KEY: "a", QUIREN_LLM_API_KEY: "n" }).llm.apiKey, "n");
+  assert.deepEqual(resolveLlmConfig({ QUIREN_LLM_PROVIDER: "anthropic", ANTHROPIC_API_KEY: "a" }), { llm: { provider: "anthropic", apiKey: "a" }, models: { analyzer: "claude-haiku-5-5", organizer: "claude-haiku-5-5" } });
+  assert.equal(resolveLlmConfig({ QUIREN_LLM_PROVIDER: "anthropic", ANTHROPIC_API_KEY: "a", QUIREN_LLM_API_KEY: "n" }).llm.apiKey, "n");
   const o = resolveLlmConfig({ QUIREN_LLM_PROVIDER: "OpenAI", OPENAI_API_KEY: "o", QUIREN_ANALYZER_MODEL: "m1", QUIREN_ORGANIZER_MODEL: "m2" });
   assert.deepEqual(o, { llm: { provider: "openai", apiKey: "o", baseUrl: "http://localhost:20128/v1" }, models: { analyzer: "m1", organizer: "m2" } });
-  assert.equal(resolveLlmConfig({ ANTHROPIC_API_KEY: "a", QUIREN_LLM_BASE_URL: "http://proxy" }).llm.baseUrl, "http://proxy");
-  assert.equal(resolveLlmConfig({ ANTHROPIC_API_KEY: "a", QUIREN_ANALYZER_MODEL: "big" }).models.analyzer, "big");
+  assert.equal(resolveLlmConfig({ QUIREN_LLM_PROVIDER: "anthropic", ANTHROPIC_API_KEY: "a", QUIREN_LLM_BASE_URL: "http://proxy" }).llm.baseUrl, "http://proxy");
+  assert.equal(resolveLlmConfig({ QUIREN_LLM_PROVIDER: "anthropic", ANTHROPIC_API_KEY: "a", QUIREN_ANALYZER_MODEL: "big" }).models.analyzer, "big");
   assert.throws(() => resolveLlmConfig({ QUIREN_LLM_PROVIDER: "openai", ANTHROPIC_API_KEY: "a" }), /No API key for provider "openai"\. Set QUIREN_LLM_API_KEY \(or OPENAI_API_KEY\)\./);
   assert.throws(() => resolveLlmConfig({ QUIREN_LLM_PROVIDER: "openai", OPENAI_API_KEY: "o", QUIREN_ANALYZER_MODEL: "m" }), (e) => e instanceof UsageError && /needs models/.test(e.message));
   assert.equal(resolveLlmConfig({ QUIREN_LLM_PROVIDER: "openai", OPENAI_API_KEY: "o", QUIREN_LLM_MODEL: "x" }).models.organizer, "x");
@@ -860,7 +860,9 @@ await t("LLM config: provider case, key precedence and fallbacks, default models
   assert.deepEqual(resolveLlmConfig({ QUIREN_LLM_PROVIDER: "local" }), { llm: { provider: "openai", baseUrl: "http://localhost:11434/v1", local: true }, models: { analyzer: undefined, organizer: undefined } });
   assert.deepEqual(resolveLlmConfig({ QUIREN_LLM_PROVIDER: "Local", QUIREN_LLM_MODEL: "gemma3", QUIREN_LLM_BASE_URL: "http://127.0.0.1:1234/v1" }).models, { analyzer: "gemma3", organizer: "gemma3" });
   assert.throws(() => resolveLlmConfig({ QUIREN_LLM_PROVIDER: "gemini" }), /must be "local", "anthropic" or "openai"/);
-  assert.throws(() => resolveLlmConfig({}), /QUIREN_LLM_PROVIDER=local/);
+  assert.throws(() => resolveLlmConfig({ QUIREN_LLM_PROVIDER: "anthropic" }), /QUIREN_LLM_PROVIDER=local/);
+  // nothing set: a model on this machine, never a paid API
+  assert.deepEqual(resolveLlmConfig({ ANTHROPIC_API_KEY: "a" }).llm, { provider: "openai", baseUrl: "http://localhost:11434/v1", local: true });
 });
 
 await t("local model: picks the first installed model, keeps a named one, explains a missing server or empty list", async () => {

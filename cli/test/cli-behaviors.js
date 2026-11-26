@@ -14,7 +14,7 @@ const NX = ENV.QUIREN_HOME;
 const S = (space) => new Store(NX, space);
 const cli = (args, opts) => runCli(ENV, args, opts);
 const { t, done } = suite("cli-behaviors");
-const KEY = { QUIREN_LLM_API_KEY: "mock-key-not-real", MOCK_LLM: "1" };
+const KEY = { QUIREN_LLM_PROVIDER: "anthropic", QUIREN_LLM_API_KEY: "mock-key-not-real", MOCK_LLM: "1" };
 const logEvents = (space, id, text) => cli(["log", "--space", space, "--id", id, "-"], { input: JSON.stringify([{ role: "user", content: text }, { role: "assistant", content: "ok" }]) });
 const mkdir = (...p) => {
   const d = path.join(tmp, ...p);
@@ -312,10 +312,10 @@ await t("doctor: home that is a file fails, a home not yet created passes, many 
   fs.writeFileSync(path.join(s.proposalsDir, "dream-x", "proposal.json"), "[]");
   assert.match(cli(["doctor", "--space", "manybad"]).out, /FAIL  space files: 8 unreadable of 8 in space "manybad": .*, and 3 more\n/);
   const oai = cli(["doctor", "--space", "x"], { extraEnv: { QUIREN_LLM_PROVIDER: "openai" } }).out;
-  const loc = cli(["doctor"], { extraEnv: { QUIREN_LLM_PROVIDER: "local" } }).out;
+  const loc = cli(["doctor"]).out; // no provider set: a model on this machine is the default
   assert.match(loc, /PASS  llm config: provider local; base URL http:\/\/localhost:11434\/v1; model first installed \(auto\); no key needed/);
   assert.match(oai, /WARN  llm config: provider openai; api key missing; base URL default http:\/\/localhost:20128\/v1; analyzer model missing; organizer model missing\n      hint: Set QUIREN_LLM_API_KEY \(or OPENAI_API_KEY\), or use a model on this machine with QUIREN_LLM_PROVIDER=local, or dream through your agent \(no key\)\. Set QUIREN_ANALYZER_MODEL\. Set QUIREN_ORGANIZER_MODEL\. Needed only for `quiren dream`\./);
-  const ok = cli(["doctor", "--space", "x"], { extraEnv: { QUIREN_LLM_API_KEY: "k", QUIREN_LLM_BASE_URL: "http://x" } }).out;
+  const ok = cli(["doctor", "--space", "x"], { extraEnv: { QUIREN_LLM_PROVIDER: "anthropic", QUIREN_LLM_API_KEY: "k", QUIREN_LLM_BASE_URL: "http://x" } }).out;
   assert.match(ok, /PASS  llm config: provider anthropic; api key set; base URL set; analyzer model claude-haiku-5-5 \(default\); organizer model claude-haiku-5-5 \(default\)\n      hint: Not tested against the network\./);
   assert.match(cli(["doctor", "--space", "partial"]).out, /PASS  pending work: 1 pending transcript\(s\), 1 proposal\(s\) awaiting review\n      hint: Run: quiren proposals, then quiren diff \/ apply \/ reject\./);
 });

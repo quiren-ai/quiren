@@ -126,7 +126,7 @@ function checkMcp(bin, env) {
 }
 
 function checkLlm(env) {
-  const provider = (env.QUIREN_LLM_PROVIDER || "anthropic").toLowerCase();
+  const provider = (env.QUIREN_LLM_PROVIDER || "local").toLowerCase();
   if (!["anthropic", "openai", "local"].includes(provider)) return check("llm config", "FAIL", `QUIREN_LLM_PROVIDER "${provider}" is not valid`, 'Use "local", "anthropic" or "openai".');
   if (provider === "local") {
     const model = env.QUIREN_LLM_MODEL || env.QUIREN_ANALYZER_MODEL;

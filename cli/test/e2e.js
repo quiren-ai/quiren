@@ -18,7 +18,7 @@ const SPACE = "acme-app";
 const store = new Store(ENV.QUIREN_HOME, SPACE);
 const cli = (args, opts = {}) => runCli(ENV, args, { cwd: PROJECT, ...opts });
 const { t, done } = suite("e2e");
-const KEY = { QUIREN_LLM_API_KEY: "mock-key-not-real", MOCK_LLM: "1" };
+const KEY = { QUIREN_LLM_PROVIDER: "anthropic", QUIREN_LLM_API_KEY: "mock-key-not-real", MOCK_LLM: "1" };
 
 /** Claude Code session JSONL as Claude Code writes it (summary, meta, sidechain, tool use, tool result). */
 function claudeSession(sessionId, turns) {

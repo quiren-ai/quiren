@@ -31,13 +31,13 @@ quiren recall "how do I run the tests"
 quiren status</code></pre>
 
         <h3 id="dream-start">Dream, review, apply</h3>
-        <p>Once a few sessions have piled up, consolidate them into the wiki. With your own key:</p>
-        <pre><code>export ANTHROPIC_API_KEY="..."
+        <p>Once a few sessions have piled up, consolidate them into the wiki. By default a dream runs on a model on your machine (Ollama), with no key and no bill:</p>
+        <pre><code>ollama pull qwen3:8b  # once
 quiren dream          # prints what it selected and a token estimate, then asks Proceed? [y/N]
 quiren proposals
 quiren diff
 quiren apply          # or: quiren reject</code></pre>
-        <p>Without a key, ask your agent to dream: it calls <code>dream_prepare</code>, writes the pages and calls <code>dream_submit</code>. Either way the result is a proposal. <code>apply</code> writes each changed page to the live wiki but skips any page you changed since the dream started, and lists it. Every write is a version you can restore.</p>
+        <p>You can also ask your agent to dream: it calls <code>dream_prepare</code>, writes the pages and calls <code>dream_submit</code>. Either way the result is a proposal. <code>apply</code> writes each changed page to the live wiki but skips any page you changed since the dream started, and lists it. Every write is a version you can restore.</p>
 
         <h2 id="concepts">Concepts</h2>
         <h3>The four layers</h3>
@@ -95,7 +95,7 @@ quiren retention --days 90</code></pre>
           <tr><th>Variable</th><th>Meaning</th></tr>
           <tr><td><code>QUIREN_HOME</code></td><td>Storage root. Default <code>~/.quiren</code>.</td></tr>
           <tr><td><code>QUIREN_SPACE</code></td><td>Space when <code>--space</code> is not given. Default: the current folder's name.</td></tr>
-          <tr><td><code>QUIREN_LLM_PROVIDER</code></td><td><code>anthropic</code> (default, needs a key), <code>local</code> (a model on your machine, no key) or <code>openai</code> (any OpenAI-compatible endpoint).</td></tr>
+          <tr><td><code>QUIREN_LLM_PROVIDER</code></td><td><code>local</code> (default: a model on your machine, no key), <code>anthropic</code> (needs a key) or <code>openai</code> (any OpenAI-compatible endpoint).</td></tr>
           <tr><td><code>QUIREN_LLM_API_KEY</code></td><td>API key. Falls back to <code>ANTHROPIC_API_KEY</code> (anthropic) or <code>OPENAI_API_KEY</code> (openai).</td></tr>
           <tr><td><code>QUIREN_LLM_BASE_URL</code></td><td>Endpoint base URL. Default for local: <code>http://localhost:11434/v1</code> (Ollama); LM Studio is <code>http://localhost:1234/v1</code>. Default for openai: <code>http://localhost:20128/v1</code>.</td></tr>
           <tr><td><code>QUIREN_LLM_MODEL</code></td><td>One model for both roles. On local it is optional: the first installed model is used.</td></tr>
@@ -147,13 +147,12 @@ codex mcp add quiren -- npx -y quiren mcp
           <li>The staged changes become a proposal for you to review.</li>
         </ol>
         <p>The agents only have document tools (<code>list_docs</code>, <code>read_doc</code>, <code>grep_docs</code>, <code>write_doc</code>, <code>edit_doc</code>, <code>delete_doc</code>, <code>rename_doc</code>, <code>submit</code>). There is no shell, network or file access.</p>
-        <h3>Providers: your key or your machine</h3>
-        <p>Two ways to run a dream, pick either:</p>
+        <h3>Providers: your machine first</h3>
         <ul>
-          <li><strong>With an API key.</strong> Set <code>ANTHROPIC_API_KEY</code> (or <code>QUIREN_LLM_API_KEY</code>). Fastest and the most careful pages.</li>
-          <li><strong>With a local model.</strong> Run Ollama or LM Studio and set <code>QUIREN_LLM_PROVIDER=local</code>. No key, nothing leaves your machine and nothing is billed. Larger models (8B and up) write better pages.</li>
+          <li><strong>Local model (default).</strong> Run Ollama or LM Studio; <code>quiren dream</code> uses the first installed model, or the one in <code>QUIREN_LLM_MODEL</code>. No key, nothing leaves your machine and nothing is billed. Larger models (8B and up) write better pages.</li>
+          <li><strong>An API, if you choose it.</strong> <code>QUIREN_LLM_PROVIDER=anthropic</code> with <code>ANTHROPIC_API_KEY</code>, or <code>QUIREN_LLM_PROVIDER=openai</code> with <code>QUIREN_LLM_BASE_URL</code> for any OpenAI-compatible endpoint with tool calling.</li>
         </ul>
-        <p>Details: Anthropic by default (<code>ANTHROPIC_API_KEY</code> or <code>QUIREN_LLM_API_KEY</code>), or any OpenAI-compatible chat-completions endpoint with tool calling, including a local router: <code>QUIREN_LLM_PROVIDER=openai</code> and <code>QUIREN_LLM_BASE_URL</code>. Choose models with <code>QUIREN_ANALYZER_MODEL</code> and <code>QUIREN_ORGANIZER_MODEL</code> (default <code>claude-haiku-5-5</code> for Anthropic; required for an OpenAI-compatible endpoint). Transient errors (429, 5xx, 529) are retried with backoff; the key never appears in output.</p>
+        <p>Details: Choose models with <code>QUIREN_ANALYZER_MODEL</code> and <code>QUIREN_ORGANIZER_MODEL</code> (default <code>claude-haiku-5-5</code> for Anthropic; required for an OpenAI-compatible endpoint). Transient errors (429, 5xx, 529) are retried with backoff; the key never appears in output.</p>
         <h3>Token budgets</h3>
         <p><code>--budget TOKENS</code> caps a run (default 3,000,000; a dream whose estimate is above it is refused). The cap is checked before each model call, so a run can overshoot only by the calls already in flight. You see progress at 50, 80 and 100 percent.</p>
         <h3>Without a key</h3>
@@ -224,7 +223,7 @@ quiren restore /deploys.md --version 2</code></pre>
         <p>Local: notes, transcripts, wiki and history are files under <code>~/.quiren</code>. Dreaming sends transcripts, notes and wiki pages to the LLM you configure, and nowhere else. Delete the folder to delete the memory. More on the <a href="/privacy/">privacy page</a>.</p>
 
         <h2 id="faq">FAQ</h2>
-        <h3>Do I need an API key?</h3><p>No. You can dream through the agent you already use. A key only lets <code>quiren dream</code> run on its own.</p>
+        <h3>Do I need an API key?</h3><p>No. <code>quiren dream</code> runs on a local model by default, and you can also dream through the agent you already use. A key is only for when you choose a hosted API.</p>
         <h3>Which agents work?</h3><p>Claude Code, Codex, Hermes, Cursor, Claude Desktop, and any MCP client over stdio. Not yet tested in every MCP client.</p>
         <h3>Can I edit the wiki by hand?</h3><p>Yes. It is plain markdown. A dream that started before your edit will not overwrite it.</p>
         <h3>How do I uninstall?</h3><p>Remove the hooks from <code>~/.claude/settings.json</code> (or restore the <code>.quiren-bak</code> backup), remove the MCP server from your client, and delete <code>~/.quiren</code>.</p>

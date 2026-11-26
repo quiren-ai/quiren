@@ -11,14 +11,14 @@ Docs: [quirenrh.com/docs](https://quirenrh.com/docs) · npm: [`quiren`](https://
 npx quiren init        # hooks + MCP for the agents it finds
 quiren remember "deploys run with make release"
 quiren recall deploy
-quiren dream           # with your API key, a local model, or through your agent
+quiren dream           # on a local model (Ollama), no key needed
 ```
 
-## Dream with a key or on your machine
+## Dream on your machine
 
-- **API key:** set `ANTHROPIC_API_KEY` (or any OpenAI-compatible endpoint).
-- **Local model, no key:** run Ollama or LM Studio, then `QUIREN_LLM_PROVIDER=local quiren dream`. Nothing leaves your machine.
-- **Through your agent, no key:** ask it to "run a Quiren dream"; it uses the `dream_prepare` and `dream_submit` MCP tools.
+- **Local model (default):** run Ollama or LM Studio (`ollama pull qwen3:8b`), then `quiren dream`. No key, nothing billed, nothing leaves your machine.
+- **Through your agent:** ask it to "run a Quiren dream"; it uses the `dream_prepare` and `dream_submit` MCP tools.
+- **A hosted API, only if you choose it:** `QUIREN_LLM_PROVIDER=anthropic` with `ANTHROPIC_API_KEY`, or any OpenAI-compatible endpoint.
 
 Every dream writes a proposal. Review with `quiren diff`, then `quiren apply` or `quiren reject`.
 

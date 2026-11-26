@@ -5,7 +5,7 @@
     <h2>What the software stores</h2>
     <p>Notes, transcripts, wiki pages, proposals and their history are plain files under <code>~/.quiren</code> (or <code>QUIREN_HOME</code>), one folder per project. Known secret patterns are replaced with <code>[REDACTED:kind]</code> markers before anything is written. This catches known patterns, not everything.</p>
     <h2>What leaves your machine</h2>
-    <p>Nothing, until you dream. A dream with your own key sends the new transcripts, the new notes and the current wiki pages to the LLM provider you configured, and nowhere else. A dream through your agent (<code>dream_prepare</code> / <code>dream_submit</code>) hands the same material to that agent, which talks to its own provider. There is no telemetry and no account.</p>
+    <p>Nothing, until you dream. A dream on a local model (the default) stays on your machine. A dream with a hosted API you chose sends the new transcripts, the new notes and the current wiki pages to the LLM provider you configured, and nowhere else. A dream through your agent (<code>dream_prepare</code> / <code>dream_submit</code>) hands the same material to that agent, which talks to its own provider. There is no telemetry and no account.</p>
     <h2>This website</h2>
     <p>The site is static pages. The simulation at <a href="/try/">/try</a> runs in your browser in recorded mode: no model is called and nothing you click is sent or saved. Your hosting provider may keep standard server logs (IP address, time, page requested).</p>
     <h2>Deleting your data</h2>

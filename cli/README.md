@@ -54,9 +54,9 @@ This needs `quiren` on your PATH, because it runs before every prompt and `npx` 
 
 A dream writes a **proposal**, never the live wiki. Review it with `quiren diff`, then `quiren apply` or `quiren reject`. Every applied write is a version you can `quiren restore`.
 
-**Three ways to dream, two need no API key.**
-- `quiren dream` with your own API key (`ANTHROPIC_API_KEY`).
-- `quiren dream` on a model on your machine: start Ollama (or LM Studio), `ollama pull qwen3:8b`, then `QUIREN_LLM_PROVIDER=local quiren dream`. No key, nothing billed, nothing leaves your machine.
+**Local first: no API key needed.**
+- `quiren dream` runs on a model on your machine by default: start Ollama (or LM Studio), `ollama pull qwen3:8b`, then `quiren dream`. No key, nothing billed, nothing leaves your machine.
+- Or choose a hosted API: `QUIREN_LLM_PROVIDER=anthropic` with `ANTHROPIC_API_KEY`.
 - Through the agent you already use: ask it to run a dream and it calls the `dream_prepare` and `dream_submit` tools, using its own model and your existing plan.
 
 How `quiren dream` runs:
@@ -69,13 +69,13 @@ How `quiren dream` runs:
 
 All agents share one token budget, checked before every model call (it can overshoot by at most the calls already in flight; you see 50/80/100% messages). Transient API errors are retried with backoff.
 
-### Dreaming with your own key
+### Dream settings
 
 Only for `quiren dream`. Through your agent none of this is needed.
 
 | Variable | Meaning |
 | --- | --- |
-| `QUIREN_LLM_PROVIDER` | `anthropic` (default, needs a key), `local` (Ollama / LM Studio on your machine, no key) or `openai` (any OpenAI-compatible `/chat/completions` endpoint with tool calling) |
+| `QUIREN_LLM_PROVIDER` | `local` (default: Ollama / LM Studio on your machine, no key), `anthropic` (needs a key) or `openai` (any OpenAI-compatible `/chat/completions` endpoint with tool calling) |
 | `QUIREN_LLM_API_KEY` | falls back to `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` |
 | `QUIREN_LLM_BASE_URL` | local default `http://localhost:11434/v1` (Ollama; LM Studio is `http://localhost:1234/v1`), openai default `http://localhost:20128/v1` |
 | `QUIREN_LLM_MODEL` | one model for both roles; on local it defaults to the first installed model |

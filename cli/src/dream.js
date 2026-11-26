@@ -24,7 +24,7 @@ export const DEFAULT_LOCAL_BASE_URL = "http://localhost:11434/v1";
  * the OpenAI-compatible API, needs no key, and its model comes from QUIREN_LLM_MODEL or is picked from what is installed.
  */
 export function resolveLlmConfig(env) {
-  const provider = (env.QUIREN_LLM_PROVIDER || "anthropic").toLowerCase();
+  const provider = (env.QUIREN_LLM_PROVIDER || "local").toLowerCase();
   if (!["anthropic", "openai", "local"].includes(provider)) throw new UsageError(`QUIREN_LLM_PROVIDER must be "local", "anthropic" or "openai" (got "${provider}").`);
   if (provider === "local") {
     const llm = { provider: "openai", baseUrl: env.QUIREN_LLM_BASE_URL || DEFAULT_LOCAL_BASE_URL, local: true };
@@ -225,7 +225,7 @@ export async function dreamCommand(store, flags, env) {
   const docsBytes = Object.values(live).reduce((n, c) => n + Buffer.byteLength(c), 0);
   const est = estimateDream({ transcripts: inputs.map((i) => ({ chars: i.text.length })), existingDocsBytes: docsBytes });
   out(`Input size: ${fmt(est.chars)} characters`);
-  const local = (env.QUIREN_LLM_PROVIDER || "").toLowerCase() === "local";
+  const local = (env.QUIREN_LLM_PROVIDER || "local").toLowerCase() === "local";
   out(`Rough estimate: ~${fmt(est.est_total_tokens)} tokens (budget ${fmt(budget)}). ${local ? "It runs on your local model: nothing is billed." : "This is billed by your LLM provider."}`);
   for (const n of est.notes) out(`  ${n}`);
   if (flags["dry-run"]) {
