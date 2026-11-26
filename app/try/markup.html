@@ -1,0 +1,57 @@
+<main id="main" class="try">
+  <div class="wrap">
+    <header class="try-head">
+      <p class="try-eyebrow">Simulation</p>
+      <h1>Try it</h1>
+      <p class="try-lede">See an agent forget, dream and remember. Follow the five steps below; the next action is always highlighted.</p>
+    </header>
+
+    <section class="guide" aria-label="Guide">
+      <div class="guide-main">
+        <div class="tsteps" id="steps"></div>
+        <div class="guide-act">
+          <button class="tbtn primary lg" id="bEnd" type="button">End session</button>
+          <button class="tbtn primary lg" id="bDream" type="button">Start the dream</button>
+          <button class="tbtn primary lg" id="bNew" type="button">Start a new session</button>
+          <button class="tbtn primary lg" id="bReplay" type="button">Replay the example</button>
+        </div>
+      </div>
+      <div class="guide-foot">
+        <div class="seg" role="group" aria-label="Mode"><button class="on" type="button" id="mRec" aria-pressed="true">Recorded</button><button type="button" id="mLive" aria-pressed="false" disabled title="Checking whether the live simulation is available…">Live</button></div>
+        <div class="banner" id="banner" role="status"></div>
+        <div class="meter" id="meter" title="Tokens used so far in this session"><div class="meter-row"><span><b id="tok">0</b> <span id="tokUnit">tokens</span></span><span id="tokNote">recorded, no model runs</span></div><div class="meter-track"><div class="meter-fill" id="tokBar"></div></div></div>
+        <button class="tbtn quiet" id="bReset" type="button">Reset</button>
+        <button class="tbtn quiet" id="bWhat" type="button">How it works</button>
+      </div>
+    </section>
+
+    <div class="panes">
+      <section class="pane" aria-labelledby="chatH"><h2 id="chatH">Chat <small id="sess">Session 3</small></h2><div class="chat-log" id="log" aria-live="polite"></div><div class="starters" id="starters" hidden></div><div class="sugs" id="sugs"></div><form class="live-form" id="liveForm" hidden><input id="liveIn" type="text" maxlength="600" autocomplete="off" placeholder="Message the agent" aria-label="Message the agent"><button class="tbtn primary" type="submit" id="liveSend">Send</button></form></section>
+      <section class="pane stagep" aria-labelledby="stageH"><h2 id="stageH">Stage <small id="stageNote">Waiting for a dream or a chat message</small></h2>
+        <div class="stage" id="stage">
+          <div class="shelf sh-t" id="shT"><b>Transcripts <em id="cT"></em></b><div class="shchips" id="chT"></div></div>
+          <div class="shelf sh-n" id="shN"><b>Notes <em id="cN"></em></b><div class="shchips" id="chN"></div></div>
+          <div class="shelf sh-i" id="shI"><b>Index <em id="cI"></em></b><div class="shchips" id="chI"></div></div>
+          <div class="shelf sh-w" id="shW"><b>Wiki <em id="cW"></em></b><div class="shchips" id="chW"></div></div>
+        </div>
+        <div class="act-h">Activity</div>
+        <div class="activity" id="act" aria-live="polite" aria-label="Activity"></div>
+      </section>
+      <section class="pane memp" aria-labelledby="memH"><h2 id="memH">Memory <small id="memNote"></small></h2>
+        <div class="tabs" role="tablist" id="tabs"></div>
+        <div class="mem" id="mem" role="tabpanel"></div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<div class="modal" id="what" role="dialog" aria-modal="true" aria-labelledby="whatT"><div class="box">
+  <h3 id="whatT">How it works</h3>
+  <p>A coding agent with a long-term memory, and the background pass (a <b>dream</b>) that keeps that memory accurate.</p>
+  <p><b>Chat.</b> You talk to the agent. It starts every session with a small context digest and can call <code>remember</code>, <code>recall</code> and <code>read_document</code>. Open a tool call to see exactly what it returned.</p>
+  <p><b>Transcripts and notes.</b> An ended session becomes a transcript, with secrets redacted first. Notes are short memories the agent saved itself. Either can be wrong or stale.</p>
+  <p><b>Dream.</b> One analyzer per input checks it against the wiki and writes what is true; then one organizer merges duplicates, dates changes and keeps the index current. Watch them walk to the shelves they read and write.</p>
+  <p><b>Review.</b> The result is a proposal: line diffs of every page. Approve updates the wiki and the digest; Reject changes nothing.</p>
+  <p><b>Recorded<span class="when-live"> or Live</span>.</b> The example is scripted: no model runs, but the search, the scrubber, the diffs and the memory come from Quiren's own engine, running in your browser.<span class="when-live"> Live runs the same engine with a real model through this site's capped proxy.</span> Nothing is saved on your machine.</p>
+  <button class="tbtn primary" type="button" id="whatClose">Close</button>
+</div></div>

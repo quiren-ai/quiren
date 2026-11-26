@@ -1,0 +1,56 @@
+/* Docs, privacy, terms: forked from Nexorum (MIT), scoped to .sub-pg. */
+.sub-pg{--display:var(--font-display);--mono:var(--font-code);--body:var(--font-sans);--ease:var(--ease-instrument)}
+.sub-pg .doc{padding:150px 0 110px}
+.sub-pg .wrap.narrow{max-width:860px}
+.sub-pg .doc h1.display{font-size:clamp(44px,6vw,84px);line-height:.95;margin-bottom:22px}
+.sub-pg .doc .lede{font-size:18px;color:var(--mercury);max-width:40em;margin-bottom:34px}
+.sub-pg .doc h2{font-family:var(--display);font-weight:500;font-size:clamp(24px,2.4vw,32px);color:var(--hi);margin:52px 0 14px;letter-spacing:-.01em;scroll-margin-top:100px}
+.sub-pg .doc h3{font-family:var(--display);font-weight:500;font-size:19px;color:var(--hi);margin:30px 0 10px;scroll-margin-top:100px}
+.sub-pg .doc p,.sub-pg .doc li{font-size:16px;line-height:1.7;color:var(--mercury)}
+.sub-pg .doc p{margin-bottom:14px}
+.sub-pg .doc ul,.sub-pg .doc ol{padding-left:22px;margin-bottom:16px}
+.sub-pg .doc li{margin-bottom:6px}
+.sub-pg .doc a{color:var(--hi);text-decoration:underline;text-underline-offset:3px}
+.sub-pg .doc code{font:500 .88em var(--mono);color:var(--hi)}
+.sub-pg .doc pre{background:#efefed;border:1px solid #dcdcd9;padding:16px 18px;overflow-x:auto;margin:0 0 18px;font:500 13.5px/1.65 var(--mono);color:var(--hi)}
+.sub-pg .doc pre code{font-size:inherit}
+.sub-pg .doc table{width:100%;border-collapse:collapse;margin:0 0 20px;font-size:14.5px}
+.sub-pg .doc th,.sub-pg .doc td{text-align:left;padding:10px 12px 10px 0;border-top:1px solid var(--steel);color:var(--mercury);vertical-align:top}
+.sub-pg .doc th{color:var(--hi);font-weight:600}
+.sub-pg .docs-grid > *{min-width:0}
+.sub-pg .docs-grid article{max-width:780px}
+.sub-pg .doc h1.display{font-size:clamp(44px,5vw,72px)}
+.sub-pg .doc code{font-weight:400}
+.sub-pg .doc pre{font-weight:400;font-size:13px}
+.sub-pg .toc a{position:relative;transition:color .25s,padding-left .3s var(--ease)}
+.sub-pg .toc a.on{color:var(--hi);padding-left:14px}
+.sub-pg .toc a.on::before{content:"";position:absolute;left:0;top:50%;width:7px;height:7px;margin-top:-3.5px;background:var(--hi);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
+.sub-pg .rv{opacity:0;transform:translateY(14px);transition:opacity .7s ease,transform .7s var(--ease)}
+.sub-pg .rv.in{opacity:1;transform:none}
+@media (max-width:700px){.sub-pg .doc table{display:block;overflow-x:auto}.sub-pg .doc td,.sub-pg .doc th{min-width:110px}}
+.sub-pg .doc .updated{margin-top:40px;font-size:13px;color:var(--mute)}
+.sub-pg .docs-grid{display:grid;grid-template-columns:220px minmax(0,1fr);gap:56px}
+.sub-pg .toc{position:sticky;top:110px;align-self:start;font-size:14px}
+.sub-pg .toc a{display:block;color:var(--mute);text-decoration:none;padding:5px 0}
+.sub-pg .toc a:hover{color:var(--hi)}
+.sub-pg .toc b{display:block;color:var(--hi);margin:16px 0 4px;font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+@media (max-width:900px){.sub-pg .docs-grid{grid-template-columns:1fr}.sub-pg .toc{position:static;display:none}.sub-pg .doc{padding-top:120px}}
+
+/* ---------- polish (2026-11-25): calmer code blocks with copy, lists, header fade ---------- */
+.sub-pg::before{content:"";position:fixed;inset:0 0 auto;height:104px;z-index:40;pointer-events:none;background:linear-gradient(var(--stone) 52%,rgb(243 243 241 / 0))}
+.sub-pg .doc pre{position:relative;background:#fbfaf8;border:1px solid #e4e1dc;border-radius:10px;padding:16px 84px 16px 18px;box-shadow:0 1px 2px rgb(40 30 20 / .04)}
+.sub-pg .doc pre .cp{position:absolute;top:10px;right:10px;height:28px;padding:0 10px;border:1px solid #e4e1dc;border-radius:6px;background:#fff;color:var(--mute);font:500 12px var(--body);cursor:pointer;transition:color .2s,border-color .2s}
+.sub-pg .doc pre .cp:hover{color:var(--hi);border-color:#cfc8bf}
+.sub-pg .doc pre .cp.ok{color:#2f7a4f;border-color:rgb(47 122 79 / .35)}
+.sub-pg .doc ul{list-style:none;padding-left:0}
+.sub-pg .doc ul > li{position:relative;padding-left:20px}
+.sub-pg .doc ul > li::before{content:"";position:absolute;left:3px;top:.72em;width:5px;height:5px;border-radius:50%;background:#c8552a}
+.sub-pg .doc p code,.sub-pg .doc li code,.sub-pg .doc td code{background:rgb(40 30 20 / .05);border-radius:4px;padding:1px 5px;font-size:.86em}
+.sub-pg .doc table{border:1px solid #e4e1dc;border-radius:12px;border-collapse:separate;border-spacing:0;overflow:hidden;background:#fbfaf8}
+.sub-pg .doc th,.sub-pg .doc td{padding:12px 16px;border-top:1px solid #ece9e4}
+.sub-pg .doc tr:first-child th,.sub-pg .doc tr:first-child td{border-top:0}
+.sub-pg .doc th{background:#f4f2ee;font-size:13px}
+.sub-pg .doc td:first-child code{white-space:nowrap}
+.sub-pg .toc b{font-size:11.5px;letter-spacing:.06em;color:var(--mute);font-weight:600}
+@media (max-width:700px){.sub-pg .doc pre{padding-right:18px;padding-top:46px}.sub-pg .doc table{display:block;overflow-x:auto}}
+.sub-pg .doc p code,.sub-pg .doc li code,.sub-pg .doc td code{-webkit-box-decoration-break:clone;box-decoration-break:clone}

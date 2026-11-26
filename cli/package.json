@@ -1,0 +1,48 @@
+{
+  "name": "quiren",
+  "version": "0.2.3",
+  "description": "Long-term memory for AI agents: notes, transcripts and a markdown wiki as plain files on your machine, plus a dream pass you review before anything changes. CLI, MCP server and Claude Code hooks.",
+  "type": "module",
+  "bin": {
+    "quiren": "bin/quiren.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node test/run.js && node test/behaviors.js && node test/cli-behaviors.js && node test/e2e.js"
+  },
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "ai-agents",
+    "agent-memory",
+    "long-term-memory",
+    "memory",
+    "claude-code",
+    "codex",
+    "cursor",
+    "llm",
+    "local-first",
+    "markdown",
+    "wiki",
+    "cli"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/quiren-ai/quiren.git",
+    "directory": "cli"
+  },
+  "bugs": {
+    "url": "https://github.com/quiren-ai/quiren/issues"
+  },
+  "homepage": "https://quirenrh.com"
+}
