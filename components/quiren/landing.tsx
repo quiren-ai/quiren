@@ -44,6 +44,45 @@ function CopyCommand({ className }: { className?: string }) {
   );
 }
 
+/** The $QRN contract address, shown once one is posted (from /token.json); copy on click. */
+function TokenCa() {
+  const [ca, setCa] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    let live = true;
+    fetch("/token.json", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => live && typeof j?.ca === "string" && /^0x[0-9a-fA-F]{40}$/.test(j.ca) && setCa(j.ca))
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, []);
+  if (!ca) return null;
+  return (
+    <button
+      type="button"
+      className="ix-ca"
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(ca);
+          setDone(true);
+          setTimeout(() => setDone(false), 1600);
+        } catch {
+          /* clipboard blocked: the address stays visible */
+        }
+      }}
+      aria-label={`Copy the $QRN contract address ${ca}`}
+    >
+      <b>$QRN</b>
+      <span className="ix-ca-k">CA</span>
+      <code title={ca}>{`${ca.slice(0, 6)}…${ca.slice(-4)}`}</code>
+      <i aria-hidden>{done ? <Check size={11} weight="bold" /> : <Copy size={11} weight="bold" />}</i>
+      <span className="ix-ca-say" aria-live="polite">{done ? "Copied" : "Copy"}</span>
+    </button>
+  );
+}
+
 function Count({ k }: { k: Kpi }) {
   const ref = useRef<HTMLSpanElement>(null);
   useEffect(() => {
@@ -312,6 +351,7 @@ export function Landing() {
                 {HERO.secondary.label}
               </LiquidGlass>
             </div>
+            <TokenCa />
           </div>
           <div className="ix-hero-foot">
             <a href="#manifesto" className="ix-scroll">

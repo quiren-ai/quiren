@@ -192,7 +192,15 @@ html.ix-ready .ix-stage canvas { opacity: 1; }
 @keyframes ix-drop { 0% { transform: translateY(-3px); opacity: 0; } 40% { opacity: 1; } 100% { transform: translateY(4px); opacity: 0; } }
 .ix.is-ready .ix-hero .ln > span { transform: none; }
 .ix.is-ready .ix-hero::before, .ix.is-ready .ix-hero-foot { opacity: 1; }
-.ix.is-ready .ix-acts, .ix.is-ready .ix-hero-sub { opacity: 1; transform: none; }
+.ix-ca { margin-top: 14px; display: inline-flex; align-items: center; gap: 10px; height: 34px; padding: 0 6px 0 12px; background: rgb(20 22 26 / 0.55); -webkit-backdrop-filter: blur(10px) saturate(1.2); backdrop-filter: blur(10px) saturate(1.2); border: 1px solid rgb(255 255 255 / 0.12); border-radius: 6px; color: rgb(255 255 255 / 0.86); font: 400 12px/1 var(--font-mono); cursor: pointer; opacity: 0; transform: translate3d(0, 16px, 0); transition: opacity 0.9s var(--ease) 0.38s, transform 0.9s var(--ease) 0.38s, color 0.3s var(--ease); }
+.ix-ca b { font: 600 12px/1 var(--font-mono); color: #fff; letter-spacing: 0.02em; }
+.ix-ca .ix-ca-k { color: rgb(255 255 255 / 0.55); }
+.ix-ca code { font: inherit; color: inherit; }
+.ix-ca i { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 4px; border: 1px solid rgb(255 255 255 / 0.22); color: #fff; }
+.ix-ca .ix-ca-say { color: rgb(255 255 255 / 0.7); padding-right: 6px; }
+.ix-ca:hover { color: #fff; }
+.ix-ca:focus-visible { outline: 2px solid #fff; outline-offset: 4px; border-radius: 4px; }
+.ix.is-ready .ix-acts, .ix.is-ready .ix-ca, .ix.is-ready .ix-hero-sub { opacity: 1; transform: none; }
 
 /* 02 manifesto */
 .ix-manifesto { min-height: 100vh; display: grid; align-items: center; justify-items: start; padding-top: 14vh; padding-bottom: 14vh; }
