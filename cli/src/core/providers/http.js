@@ -115,7 +115,7 @@ export async function postJson({ url, headers, body, label, describeError, isBad
       return data;
     }
     const { type, message } = describeError(data, text ?? "");
-    const err = new LlmError(redact(`${label} API error ${res.status} (${type}): ${message}${res.status === 401 ? " Check the API key." : ""}`), {
+    const err = new LlmError(redact(`${label} API error ${res.status} (${type}): ${message}${res.status === 401 || res.status === 403 ? " The key was refused: check the API key (for NVIDIA, NVIDIA_API_KEY)." : ""}`), {
       status: res.status,
       type,
       retryable: RETRY_STATUS.has(res.status) || type === "overloaded_error",

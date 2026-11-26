@@ -4,6 +4,7 @@
 // All handlers are synchronous, so a check and the write after it cannot interleave with another agent.
 import { INDEX_PATH } from "../text.js";
 import { MAX_DOC_BYTES } from "../wiki.js";
+import { lintWiki } from "../lint.js";
 
 export const MAX_TOOL_OUTPUT_CHARS = 30_000;
 export const MAX_READ_CHARS = 28_000;
@@ -139,6 +140,7 @@ function explain(e, p) {
 export function createToolbox({ docs, role, scrub, stats }) {
   const seen = new Map(); // path -> sha256 of the content this agent has read completely
   let indexRejections = 0;
+  let lintRejections = 0;
   const definitions = toolDefinitions(role);
   const allowed = new Set(definitions.map((d) => d.name));
 
@@ -324,6 +326,14 @@ export function createToolbox({ docs, role, scrub, stats }) {
         // Refused twice at most: a model that cannot shorten it must still be able to finish.
         if (index.content.length > INDEX_MAX_CHARS && indexRejections++ < MAX_INDEX_REJECTIONS) {
           return fail(`${INDEX_PATH} is ${index.content.length} characters; it is injected into every session and must stay under ${INDEX_MAX_CHARS}. Shorten entries, group or drop low-value ones, then submit again.`);
+        }
+      }
+      if (docs.list().length > 0 && lintRejections < MAX_INDEX_REJECTIONS) {
+        const wiki = Object.fromEntries(docs.list().map((d) => [d.path, docs.get(d.path)?.content ?? ""]));
+        const broken = lintWiki(wiki).filter((w) => w.includes(" links to [["));
+        if (broken.length) {
+          lintRejections++;
+          return fail(`Not consistent yet:\n- ${broken.join("\n- ")}\nA [[link]] must match a document's file name without .md (for [[database]], /database.md). Rename the document or fix the link, then submit again.`);
         }
       }
       return { text: "Submitted.", isError: false, submission: { summary, changes: input.changes.slice(0, 100).map((c) => clip(c.trim(), 300)) } };

@@ -5,7 +5,7 @@ import { parseFrontmatter } from "./basics.js";
 const K1 = 1.5;
 const B = 0.75;
 const TITLE_WEIGHT = 3;
-const STOP_WORDS = new Set("a an and are as at be but by for from has have i in is it its of on or that the this to was were will with you".split(" "));
+const STOP_WORDS = new Set("a an and are as at be but by can could did do does for from has have how i in is it its me my of on or our should that the this to was we were what when where which who why will with would you your".split(" "));
 
 const dropDouble = (w) => (/([^aeiou])\1$/.test(w) && w.length > 3 ? w.slice(0, -1) : w);
 

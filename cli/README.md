@@ -78,7 +78,7 @@ Only for `quiren dream`. Through your agent none of this is needed.
 | `QUIREN_LLM_PROVIDER` | `local` (default: Ollama / LM Studio on your machine, no key) or `nvidia` (NVIDIA's hosted models, needs `NVIDIA_API_KEY`) |
 | `QUIREN_LLM_API_KEY` | key for the provider; falls back to `NVIDIA_API_KEY`. A local server rarely needs one |
 | `QUIREN_LLM_BASE_URL` | local default `http://localhost:11434/v1` (Ollama; LM Studio is `http://localhost:1234/v1`), nvidia default `https://integrate.api.nvidia.com/v1` |
-| `QUIREN_LLM_MODEL` | one model for both roles; local: the first installed model, nvidia: `nvidia/nemotron-3.5-lightning-30b-a3b` |
+| `QUIREN_LLM_MODEL` | one model for both roles; local: the first installed model, nvidia: `nvidia/nemotron-3-ultra-550b-a55b` |
 | `QUIREN_ANALYZER_MODEL`, `QUIREN_ORGANIZER_MODEL` | a different model per role, if you want one |
 
 It prints a token estimate and asks before spending; the default budget is 3,000,000 tokens and a dream that would exceed it is refused. Dream agents get document tools only (`list_docs`, `read_doc`, `grep_docs`, `write_doc`, `edit_doc`, and for the organizer `delete_doc`, `rename_doc`, then `submit`; no shell, no network) and treat transcripts as untrusted data. Quality depends on the model you use.

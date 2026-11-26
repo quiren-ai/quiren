@@ -50,6 +50,12 @@ const RULES = [
   ["google_api_key", /\bAIza[0-9A-Za-z_-]{35}/g],
   ["jwt", /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/g],
   ["bearer_token", /\bBearer\s+[A-Za-z0-9._~+/=-]{20,}/g],
+  ["nvidia_key", /\bnvapi-[A-Za-z0-9_-]{20,}/g],
+  // scheme://user:password@host keeps the scheme, user and host; only the password goes
+  ["url_password", /\b([a-z][a-z0-9+.-]*:\/\/[^\s:@/]+:)(?!\[REDACTED)([^\s@/]+)@/gi, (_m, head) => `${head}[REDACTED:url_password]@`],
+  // password=..., api_key: "...", SECRET_TOKEN=... keep the name, drop the value. Only values with a digit and no
+  // brackets count, so code (token = getToken(), password = process.env.X) and $VARS / ${{ }} / placeholders stay.
+  ["assigned_secret", /\b([A-Za-z0-9_.-]*(?:password|passwd|pwd|secret|token|api[_-]?key|access[_-]?key|private[_-]?key|client[_-]?secret)\s*[=:]\s*["'`]?)(?![$\[{<*])(?=[^\s"'`,;()\[\]{}<>]*\d)([^\s"'`,;()\[\]{}<>]{6,})(?=$|[\s"'`,;])/gim, (_m, head) => `${head}[REDACTED:assigned_secret]`],
 ];
 
 /**
@@ -60,7 +66,7 @@ export function scrubSecrets(text) {
   let out = String(text);
   let count = 0;
   const kinds = [];
-  for (const [kind, re] of RULES) {
+  for (const [kind, re, rewrite] of RULES) {
     const label = `[REDACTED:${kind}]`;
     let hits = 0;
     if (re === null) {
@@ -68,9 +74,9 @@ export function scrubSecrets(text) {
       out = r.text;
       hits = r.hits;
     } else {
-      out = out.replace(re, () => {
+      out = out.replace(re, (...m) => {
         hits++;
-        return label;
+        return rewrite ? rewrite(...m) : label;
       });
     }
     if (hits) {

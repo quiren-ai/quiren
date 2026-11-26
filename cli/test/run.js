@@ -78,7 +78,7 @@ await t("help, version, no command (exit 2), unknown command (exit 2), usage lis
   assert.equal(h.code, 0);
   assert.equal(h.out.trim(), USAGE);
   for (const c of ["init", "mcp", "hook", "remember", "recall", "context", "status", "log", "import omp", "dream", "doctor", "proposals", "diff", "apply", "reject", "restore", "history", "retention"]) assert.ok(USAGE.includes(`  ${c}`), c);
-  assert.equal(cli(["--version"]).out.trim(), "0.2.3");
+  assert.equal(cli(["--version"]).out.trim(), "0.2.4");
   assert.equal(cli([]).code, 2);
   const u = cli(["frobnicate"]);
   assert.equal(u.code, 2);
@@ -338,7 +338,7 @@ await t("engine: retries 529 with backoff; a 401 stops every agent and never lea
   const bad = makeMockFetch({ failFirst: 1000, failStatus: 401 });
   const r = await runDream({ llm: anthropic, models: MODELS, docs: new MemoryWiki(), transcripts: engineInputs(4), budgetTokens: 1e6, fetch: bad.fetch, retry: { baseMs: 1 } });
   assert.equal(r.status, "failed");
-  assert.match(r.error, /Anthropic API error 401 \(authentication_error\).*Check the API key\./);
+  assert.match(r.error, /Anthropic API error 401 \(authentication_error\).*The key was refused: check the API key/);
   assert.ok(!JSON.stringify(r).includes("secret-test-key-123"));
   assert.ok(bad.stats.calls <= 3, `fatal error should stop the queue, got ${bad.stats.calls} calls`);
   const none = await runDream({ llm: { provider: "anthropic" }, models: MODELS, docs: new MemoryWiki(), transcripts: engineInputs(1), budgetTokens: 1 });
@@ -497,7 +497,7 @@ await t("MCP over real stdio: protocol, 17 tools, calls, resource, errors, notif
   assert.equal(res.length, 11);
   const by = new Map(res.map((x) => [x.id, x]));
   assert.equal(by.get(1).result.protocolVersion, "2025-03-26");
-  assert.deepEqual(by.get(1).result.serverInfo, { name: "quiren", version: "0.2.3" });
+  assert.deepEqual(by.get(1).result.serverInfo, { name: "quiren", version: "0.2.4" });
   assert.deepEqual(
     by.get(2).result.tools.map((x) => x.name),
     ["remember", "update_note", "save_transcript", "recall", "forget", "context", "read_document", "search_documents", "list_documents", "memory_status", "list_notes", "related_documents", "document_history", "list_proposals", "show_proposal", "dream_prepare", "dream_submit"],

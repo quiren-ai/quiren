@@ -16,7 +16,7 @@ const fmt = (n) => Number(n).toLocaleString("en-US");
 
 export const DEFAULT_LOCAL_BASE_URL = "http://localhost:11434/v1";
 export const DEFAULT_NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1";
-export const DEFAULT_NVIDIA_MODEL = "nvidia/nemotron-3.5-lightning-30b-a3b";
+export const DEFAULT_NVIDIA_MODEL = "nvidia/nemotron-3-ultra-550b-a55b";
 
 /**
  * Dream settings from the environment. Quiren dreams on a model on this machine only: Ollama by default, or LM Studio /

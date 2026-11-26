@@ -153,7 +153,7 @@ codex mcp add quiren -- npx -y quiren mcp
           <li><strong>LM Studio or llama.cpp.</strong> Start its server and set <code>QUIREN_LLM_BASE_URL</code>, for example <code>http://localhost:1234/v1</code>. Any local server with the OpenAI-compatible chat API and tool calling works.</li>
         </ul>
         <p>No key, nothing leaves your machine and nothing is billed.</p>
-        <p><strong>No GPU for a large model?</strong> Use NVIDIA's hosted models with a free key from build.nvidia.com: <code>QUIREN_LLM_PROVIDER=nvidia</code> and <code>NVIDIA_API_KEY</code>. The default model is <code>nvidia/nemotron-3.5-lightning-30b-a3b</code>; pick another with <code>QUIREN_LLM_MODEL</code>. The dream input is then sent to NVIDIA. Nothing calls a hosted API unless you set this.</p>
+        <p><strong>No GPU for a large model?</strong> Use NVIDIA's hosted models with a free key from build.nvidia.com: <code>QUIREN_LLM_PROVIDER=nvidia</code> and <code>NVIDIA_API_KEY</code>. The default model is <code>nvidia/nemotron-3-ultra-550b-a55b</code>; pick another with <code>QUIREN_LLM_MODEL</code>. The dream input is then sent to NVIDIA. Nothing calls a hosted API unless you set this.</p>
         <p>Transient errors (429, 5xx) are retried with backoff.</p>
         <h3>Token budgets</h3>
         <p><code>--budget TOKENS</code> caps a run (default 3,000,000; a dream whose estimate is above it is refused). The cap is checked before each model call, so a run can overshoot only by the calls already in flight. You see progress at 50, 80 and 100 percent.</p>

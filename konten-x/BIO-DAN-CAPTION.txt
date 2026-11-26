@@ -9,9 +9,8 @@ DOMAIN · NAMA · USERNAME
 Domain   : quirenrh.com   (udah LIVE, HTTPS) -> https://quirenrh.com
 Nama X   : Quiren
 Username : @quirenrh   (sama persis dengan domain, gampang diingat)
-           Cadangan kalau udah dipakai orang: @quiren_ai (sama dengan GitHub quiren-ai)
-           · @usequiren · @quirenmemory
-           (ketersediaan username di X belum bisa dicek karena X minta login; cek pas daftar)
+           Akun udah jadi (https://x.com/quirenrh) dan udah dipasang di web: header, menu HP,
+           hero dan footer, plus kartu link di X (twitter:site = @quirenrh), 2026-11-26.
 
 Kenapa nama ini: "quire" itu kumpulan lembaran yang dijilid jadi buku. Logonya cincin Q yang
 ngumpulin dua lembar ke pojoknya: lembar kecil = yang udah diingat agent, lembar besar = yang

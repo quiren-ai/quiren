@@ -318,7 +318,7 @@ await t("doctor: home that is a file fails, a home not yet created passes, many 
   const paid = cli(["doctor", "--space", "x"], { extraEnv: { QUIREN_LLM_PROVIDER: "anthropic" } });
   assert.match(paid.out, /FAIL  llm config: QUIREN_LLM_PROVIDER "anthropic" is not supported/);
   const nv = cli(["doctor", "--space", "x"], { extraEnv: { QUIREN_LLM_PROVIDER: "nvidia", NVIDIA_API_KEY: "nv-secret-xyz" } }).out;
-  assert.match(nv, /PASS  llm config: NVIDIA hosted; base URL https:\/\/integrate\.api\.nvidia\.com\/v1; model nvidia\/nemotron-3\.5-lightning-30b-a3b; api key set/);
+  assert.match(nv, /PASS  llm config: NVIDIA hosted; base URL https:\/\/integrate\.api\.nvidia\.com\/v1; model nvidia\/nemotron-3-ultra-550b-a55b; api key set/);
   assert.ok(!nv.includes("nv-secret-xyz"));
   assert.match(cli(["doctor", "--space", "partial"]).out, /PASS  pending work: 1 pending transcript\(s\), 1 proposal\(s\) awaiting review\n      hint: Run: quiren proposals, then quiren diff \/ apply \/ reject\./);
 });

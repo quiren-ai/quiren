@@ -71,6 +71,35 @@ await t("ids and hashes: prefix_ + 22 base64url chars; sha256 hex", () => {
   assert.equal(sha256Hex("abc"), "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
 });
 
+await t("organizer submit refuses dangling [[links]] twice, then lets the dream finish", () => {
+  const docs = new MemoryWiki({ "/_index.md": "## data\n[[database]] - the prod db\n", "/_database.md": "---\nname: _database\n---\nPostgres." });
+  const box = createToolbox({ docs, role: "organizer", scrub: scrubSecrets, stats: { mutations: 0, redactions: 0 } });
+  const go = () => box.execute("submit", { summary: "done", changes: [] });
+  const first = go();
+  assert.equal(first.isError, true);
+  assert.match(first.text, /\/_index\.md links to \[\[database\]\] which does not exist/);
+  assert.equal(go().isError, true);
+  assert.equal(go().isError, false);
+});
+
+await t("scrubber: NVIDIA keys, passwords in URLs, assigned secrets; code and prose stay", () => {
+  const cases = [
+    ["key nvapi-EXAMPLEexampleEXAMPLE0000fake", "key [REDACTED:nvidia_key]"],
+    ["db postgres://admin:Examp1ePass@db.internal:5432/app", "db postgres://admin:[REDACTED:url_password]@db.internal:5432/app"],
+    ["password: hunter2", "password: [REDACTED:assigned_secret]"],
+    ['DB_PASSWORD: "Ex4mple&3x"', 'DB_PASSWORD: "[REDACTED:assigned_secret]"'],
+    ["SECRET_TOKEN=example1234 next", "SECRET_TOKEN=[REDACTED:assigned_secret] next"],
+  ];
+  for (const [raw, want] of cases) {
+    const r = scrubSecrets(raw);
+    assert.equal(r.text, want);
+    assert.equal(scrubSecrets(r.text).count, 0, "idempotent: " + want);
+  }
+  for (const keep of ["https://user@github.com/x", "const token = getToken()", "password = process.env.DB_PASS", "token = tokens[0]", "api_key=getKey2()", "tokenizer: wordpiece-uncased", "max_tokens: 2048", "token: ${{ secrets.NPM_TOKEN }}", "export GITHUB_TOKEN=$GH_TOKEN", "the deploy token is the CI secret DEPLOY_TOKEN", "passwordless: true"]) {
+    assert.equal(scrubSecrets(keep).count, 0, keep);
+  }
+});
+
 await t("scrubber edge cases: PEM without END (several headers, header without body), ordering, short tokens, idempotent", () => {
   const body = "\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASC\nAbCdEfGhIjKlMnOpQrStUvWxYz012345==";
   const twoTruncated = `a -----BEGIN PRIVATE KEY-----${body}\nb -----BEGIN EC PRIVATE KEY-----${body}\nc`;
@@ -856,7 +885,7 @@ await t("LLM config: a local model only, Ollama by default, key optional, other 
   for (const p of ["anthropic", "openai", "gemini"]) assert.throws(() => resolveLlmConfig({ QUIREN_LLM_PROVIDER: p }), (e) => e instanceof UsageError && /must be "local" \(default\) or "nvidia"/.test(e.message));
   // NVIDIA: opt-in only, with its own key; the default model and endpoint, both overridable
   assert.throws(() => resolveLlmConfig({ QUIREN_LLM_PROVIDER: "nvidia" }), /No key for NVIDIA/);
-  assert.deepEqual(resolveLlmConfig({ QUIREN_LLM_PROVIDER: "NVIDIA", NVIDIA_API_KEY: "nv" }), { llm: { provider: "openai", baseUrl: "https://integrate.api.nvidia.com/v1", apiKey: "nv", hosted: "NVIDIA" }, models: { analyzer: "nvidia/nemotron-3.5-lightning-30b-a3b", organizer: "nvidia/nemotron-3.5-lightning-30b-a3b" } });
+  assert.deepEqual(resolveLlmConfig({ QUIREN_LLM_PROVIDER: "NVIDIA", NVIDIA_API_KEY: "nv" }), { llm: { provider: "openai", baseUrl: "https://integrate.api.nvidia.com/v1", apiKey: "nv", hosted: "NVIDIA" }, models: { analyzer: "nvidia/nemotron-3-ultra-550b-a55b", organizer: "nvidia/nemotron-3-ultra-550b-a55b" } });
   assert.equal(resolveLlmConfig({ QUIREN_LLM_PROVIDER: "nvidia", NVIDIA_API_KEY: "nv", QUIREN_LLM_MODEL: "z-ai/glm" }).models.organizer, "z-ai/glm");
   assert.equal(resolveLlmConfig({ NVIDIA_API_KEY: "nv" }).llm.local, true, "a key alone never switches off the local default");
 });
@@ -1055,7 +1084,7 @@ await t("HTTP: 404 is fatal, 400 is not retried, 5xx gives up after N attempts, 
   assert.match(unreadable.error, /The Anthropic API returned an unreadable response\./);
   const echo = await run(async () => err(401, `invalid x-api-key ${anthropicLlm.apiKey}`));
   assert.ok(!JSON.stringify(echo).includes("supersecretkeyvalue"));
-  assert.match(echo.error, /Check the API key\./);
+  assert.match(echo.error, /The key was refused: check the API key/);
   let waits = 0;
   const t0 = Date.now();
   await run(async () => (waits++ === 0 ? new Response("{}", { status: 429, headers: { "retry-after": "0" } }) : reply([submitBlock()])), { retry: { baseMs: 5000, maxAttempts: 3 } });
